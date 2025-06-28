@@ -44,11 +44,6 @@ const Desktop: React.FC<DesktopProps> = ({
     }
   };
 
-  const handlePromptSelect = () => {
-    // Optionally close the drawer after selection
-    setIsPromptDrawerOpen(false);
-  };
-
   return (
     <div className="desktop">
       <div className="desktop-header">
@@ -162,7 +157,6 @@ const Desktop: React.FC<DesktopProps> = ({
         isOpen={isPromptDrawerOpen}
         onClose={() => setIsPromptDrawerOpen(false)}
         selectedAgent={selectedAgent}
-        onPromptSelect={handlePromptSelect}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Desktop from './components/Desktop';
 import ChatBar from './components/ChatBar';
 import ApiStatus from './components/ApiStatus';
