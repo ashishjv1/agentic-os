@@ -43,8 +43,7 @@ class OpenRouterService {
     console.log('Config:', { 
       baseUrl: this.config.baseUrl, 
       model: this.config.model,
-      hasApiKey: !!this.config.apiKey,
-      apiKeyPreview: this.config.apiKey?.substring(0, 10) + '...'
+      hasApiKey: !!this.config.apiKey
     });
     
     const systemPrompt = this.getSystemPrompt(request.agentType);
@@ -66,8 +65,13 @@ class OpenRouterService {
         console.log(`✅ Success with model: ${model}`);
         return result;
       } catch (error) {
-        console.warn(`❌ Model ${model} failed:`, error.message);
-        lastError = error;
+        if (error instanceof Error) {
+          console.warn(`❌ Model ${model} failed:`, error.message);
+          lastError = error;
+        } else {
+          console.warn(`❌ Model ${model} failed:`, String(error));
+          lastError = new Error(String(error));
+        }
         continue;
       }
     }
@@ -113,6 +117,12 @@ class OpenRouterService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ API Error Response:', errorText);
+        console.error('❌ Request headers check:', {
+          hasAuthHeader: !!this.config.apiKey,
+          authHeaderFormat: this.config.apiKey ? 'Bearer [REDACTED]' : 'MISSING',
+          contentType: 'application/json',
+          baseUrl: this.config.baseUrl
+        });
         throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
@@ -130,10 +140,14 @@ class OpenRouterService {
       
       return parsed;
     } catch (error) {
-      console.error('❌ OpenRouter API Error Details:', {
-        message: error.message,
-        stack: error.stack
-      });
+      if (error instanceof Error) {
+        console.error('❌ OpenRouter API Error Details:', {
+          message: error.message,
+          stack: error.stack
+        });
+      } else {
+        console.error('❌ OpenRouter API Error Details:', error);
+      }
       throw error; // Re-throw without wrapping to allow fallback logic
     }
   }
@@ -219,7 +233,10 @@ Focus on presenting information in an organized, readable format with proper cit
 Create apps that display research results, news summaries, fact comparisons, timelines, and informational dashboards.`
     };
 
-    return basePrompt + (agentSpecific[agentType] || agentSpecific['app-generator']);
+    type AgentType = keyof typeof agentSpecific;
+    const agentKey = (agentType in agentSpecific ? agentType : 'app-generator') as AgentType;
+
+    return basePrompt + agentSpecific[agentKey];
   }
 
   private async buildUserPrompt(request: GenerationRequest): Promise<string> {
@@ -444,7 +461,6 @@ export function createOpenRouterService(agentType: string): OpenRouterService {
   console.log('🔑 Factory: API Key check:', {
     hasApiKey: !!apiKey,
     apiKeyLength: apiKey?.length,
-    apiKeyPreview: apiKey?.substring(0, 15) + '...',
     baseUrl: baseUrl
   });
   
@@ -462,7 +478,7 @@ export function createOpenRouterService(agentType: string): OpenRouterService {
     'info-agent': import.meta.env.VITE_INFO_AGENT_MODEL
   };
 
-  const model = modelMap[agentType] || import.meta.env.VITE_APP_GENERATOR_MODEL || 'meta-llama/llama-3.1-8b-instruct:free';
+  const model = modelMap[agentType as keyof typeof modelMap] || import.meta.env.VITE_APP_GENERATOR_MODEL || 'meta-llama/llama-3.1-8b-instruct:free';
   
   console.log('🤖 Factory: Selected model for', agentType, ':', model);
 
