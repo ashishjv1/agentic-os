@@ -3,7 +3,6 @@ import { GeneratedApp } from '../types';
 import AppRenderer from './AppRenderer';
 import AppHistory from './AppHistory';
 import PromptDrawer from './PromptDrawer';
-import PromptService, { SimplePrompt } from '../services/promptService';
 import './Desktop.css';
 
 interface DesktopProps {
@@ -45,7 +44,7 @@ const Desktop: React.FC<DesktopProps> = ({
     }
   };
 
-  const handlePromptSelect = (prompt: SimplePrompt) => {
+  const handlePromptSelect = () => {
     // Optionally close the drawer after selection
     setIsPromptDrawerOpen(false);
   };

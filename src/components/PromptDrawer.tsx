@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PromptService, { SimplePrompt } from '../services/promptService';
 import './PromptDrawer.css';
 
@@ -6,10 +6,9 @@ interface PromptDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   selectedAgent: string;
-  onPromptSelect: (prompt: SimplePrompt) => void;
 }
 
-export default function PromptDrawer({ isOpen, onClose, selectedAgent, onPromptSelect }: PromptDrawerProps) {
+export default function PromptDrawer({ isOpen, onClose, selectedAgent }: PromptDrawerProps) {
   const [selectedPrompts, setSelectedPrompts] = useState<Record<string, string>>({});
   const [allPrompts, setAllPrompts] = useState<SimplePrompt[]>([]);
   const [searchTerm, setSearchTerm] = useState('');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PromptService, { SimplePrompt } from '../services/promptService';
 import './PromptDrawer.css';
 

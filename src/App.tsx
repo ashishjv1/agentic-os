@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Desktop from './components/Desktop';
 import ChatBar from './components/ChatBar';
 import ApiStatus from './components/ApiStatus';
@@ -109,9 +109,7 @@ function App() {
 
     } catch (error) {
       console.error('❌ Failed to generate app:', error);
-      
-      // Check if it was cancelled
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         console.log('🛑 Generation was cancelled by user');
         const cancelMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
@@ -121,11 +119,20 @@ function App() {
           agentId: selectedAgent.id,
         };
         setChatHistory(prev => [...prev, cancelMessage]);
-      } else {
+      } else if (error instanceof Error) {
         const errorMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content: `Sorry, I encountered an error while generating the app: ${error.message}`,
+          timestamp: new Date(),
+          agentId: selectedAgent.id,
+        };
+        setChatHistory(prev => [...prev, errorMessage]);
+      } else {
+        const errorMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: 'Sorry, I encountered an unknown error while generating the app.',
           timestamp: new Date(),
           agentId: selectedAgent.id,
         };
