@@ -18,9 +18,9 @@ export default function PromptDrawer({ isOpen, onClose, selectedAgent, onPromptS
     const selections = PromptService.getSelectedPrompts();
     setSelectedPrompts(selections);
     
-    // Get all prompts (we'll filter by agent category)
-    const agentPrompts = PromptService.getPromptsByCategory(selectedAgent);
-    setAllPrompts(agentPrompts);
+    // Get all prompts (they work for all agent types)
+    const allPrompts = PromptService.getAllPrompts();
+    setAllPrompts(allPrompts);
   }, [selectedAgent]);
 
   const handlePromptSelect = (prompt: SimplePrompt) => {
