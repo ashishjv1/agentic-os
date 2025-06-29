@@ -4,8 +4,6 @@ import ChatBar from './components/ChatBar';
 import ApiStatus from './components/ApiStatus';
 import { Agent, ChatMessage, GeneratedApp } from './types';
 import { createOpenRouterService } from './services/openRouterService';
-import { debugEnvVars } from './utils/debug';
-import { testOpenRouterConnection } from './utils/testConnection';
 import './App.css';
 
 // Default fallback agents (using OpenRouter as fallback)
@@ -215,15 +213,24 @@ function App() {
     setSelectedAgent(agent);
   };
 
-  // Debug environment variables on component mount
+  // Debug on component mount
   useEffect(() => {
     console.log('=== App Starting ===');
-    console.log('API Key loaded:', !!import.meta.env.VITE_OPENROUTER_API_KEY);
-    console.log('API Key preview:', import.meta.env.VITE_OPENROUTER_API_KEY?.substring(0, 10) + '...');
-    debugEnvVars();
+    console.log('Using localStorage-based API key management');
     
-    // Test OpenRouter connection
-    testOpenRouterConnection();
+    // Check if any API keys are stored locally
+    try {
+      const savedKeys = localStorage.getItem('agentic-os-api-keys');
+      if (savedKeys) {
+        const keys = JSON.parse(savedKeys);
+        const hasAnyKey = Object.values(keys).some(key => key && typeof key === 'string' && key.trim().length > 0);
+        console.log('Local API keys available:', hasAnyKey);
+      } else {
+        console.log('No local API keys found');
+      }
+    } catch (error) {
+      console.warn('Failed to check local API keys:', error);
+    }
   }, []);
 
   const handleSendMessage = async (message: string) => {

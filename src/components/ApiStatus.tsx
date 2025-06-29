@@ -101,15 +101,13 @@ const ApiStatus: React.FC<ApiStatusProps> = ({ isVisible, onClose, onApiKeysUpda
   };
 
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-    console.log('ApiStatus - Raw API Key:', apiKey);
-    console.log('ApiStatus - API Key length:', apiKey?.length);
-    console.log('ApiStatus - API Key type:', typeof apiKey);
+    // Only check localStorage API keys now, no more .env dependency
+    const hasStoredKeys = Object.values(apiKeys).some(key => key && key.trim().length > 0);
     
-    // Check if any API keys are configured (either env or localStorage)
-    const hasEnvKey = !!apiKey && apiKey !== 'your_openrouter_api_key_here' && apiKey.trim().length > 0;
-    const hasStoredKeys = Object.values(apiKeys).some(key => key.trim().length > 0);
-    setHasApiKey(hasEnvKey || hasStoredKeys);
+    console.log('ApiStatus - hasStoredKeys:', hasStoredKeys);
+    console.log('ApiStatus - API keys check:', apiKeys);
+    
+    setHasApiKey(hasStoredKeys);
   }, [apiKeys]);
 
   // Save API keys to localStorage whenever they change
@@ -258,10 +256,11 @@ const ApiStatus: React.FC<ApiStatusProps> = ({ isVisible, onClose, onApiKeysUpda
               <div className="setup-instructions">
                 <p>To enable AI-powered app generation:</p>
                 <ol>
-                  <li>Get an API key from <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">OpenRouter.ai</a> or other providers</li>
-                  <li>Edit your <code>.env</code> file</li>
-                  <li>Replace <code>your_openrouter_api_key_here</code> with your actual API key</li>
-                  <li>Restart the development server</li>
+                  <li>Choose any AI provider: OpenAI, Anthropic, or OpenRouter</li>
+                  <li>Get an API key from your chosen provider</li>
+                  <li>Enter your API key in the corresponding section below</li>
+                  <li>Your keys are stored locally in your browser and never sent to our servers</li>
+                  <li>Start generating apps immediately!</li>
                 </ol>
               </div>
             )}

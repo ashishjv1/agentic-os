@@ -1,9 +1,11 @@
 import PromptService from './promptService';
 import NewsService from './newsService';
 
-export interface OpenRouterConfig {
+export interface AIConfig {
+  provider: 'openai' | 'anthropic' | 'openrouter';
   apiKey: string;
   baseUrl: string;
+  endpoint: string;
   model: string;
 }
 
@@ -22,18 +24,29 @@ export interface GenerationResponse {
   description: string;
 }
 
-class OpenRouterService {
-  private config: OpenRouterConfig;
-  private fallbackModels: string[] = [
-    'deepseek/deepseek-chat-v3-0324:free',
-    'microsoft/wizardlm-2-8x22b:free', 
-    'anthropic/claude-3-haiku:free',
-    'meta-llama/llama-3.2-3b-instruct:free',
-    'qwen/qwen-2.5-7b-instruct:free',
-    'google/gemma-2-9b-it:free'
-  ];
+class AIService {
+  private config: AIConfig;
+  private fallbackModels: Record<string, string[]> = {
+    openrouter: [
+      'deepseek/deepseek-chat-v3-0324:free',
+      'microsoft/wizardlm-2-8x22b:free', 
+      'anthropic/claude-3-haiku:free',
+      'meta-llama/llama-3.2-3b-instruct:free',
+      'qwen/qwen-2.5-7b-instruct:free',
+      'google/gemma-2-9b-it:free'
+    ],
+    openai: [
+      'gpt-4o-mini',
+      'gpt-3.5-turbo',
+      'gpt-4'
+    ],
+    anthropic: [
+      'claude-3-5-haiku-20241022',
+      'claude-3-5-sonnet-20241022'
+    ]
+  };
 
-  constructor(config: OpenRouterConfig) {
+  constructor(config: AIConfig) {
     this.config = config;
   }
 
@@ -54,7 +67,8 @@ class OpenRouterService {
     console.log('📝 User prompt preview:', userPrompt.substring(0, 300) + '...');
 
     // Try the primary model first, then fallbacks
-    const modelsToTry = [this.config.model, ...this.fallbackModels.filter(m => m !== this.config.model)];
+    const fallbackList = this.fallbackModels[this.config.provider] || [];
+    const modelsToTry = [this.config.model, ...fallbackList.filter(m => m !== this.config.model)];
     
     let lastError: Error | null = null;
     
@@ -86,19 +100,32 @@ class OpenRouterService {
     request: GenerationRequest
   ): Promise<GenerationResponse> {
 
+    // Check if API key is configured
+    if (!this.config.apiKey || this.config.apiKey === '' || this.config.apiKey === 'your_openrouter_api_key_here') {
+      throw new Error('No API key configured. Please open the settings panel (⚙️ icon) and add your API keys to generate apps.');
+    }
+
     try {
-      console.log('📡 Making API request to:', `${this.config.baseUrl}/chat/completions`);
+      console.log('📡 Making API request to:', `${this.config.baseUrl}${this.config.endpoint}`);
+      console.log('📡 Using provider:', this.config.provider);
+      console.log('📡 Using model:', model);
       
-      // Use fetch instead of axios for better compatibility
-      const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.config.apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'Agentic OS Prototype'
-        },
-        body: JSON.stringify({
+      // Prepare headers based on provider
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      // Prepare request body based on provider
+      let requestBody: any;
+
+      if (this.config.provider === 'openai' || this.config.provider === 'openrouter') {
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+        if (this.config.provider === 'openrouter') {
+          headers['HTTP-Referer'] = window.location.origin;
+          headers['X-Title'] = 'Agentic OS Prototype';
+        }
+        
+        requestBody = {
           model: model,
           messages: [
             { role: 'system', content: systemPrompt },
@@ -107,7 +134,26 @@ class OpenRouterService {
           temperature: 0.7,
           max_tokens: 6000,
           stream: false
-        }),
+        };
+      } else if (this.config.provider === 'anthropic') {
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+        headers['anthropic-version'] = '2023-06-01';
+        
+        requestBody = {
+          model: model,
+          messages: [
+            { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` }
+          ],
+          max_tokens: 6000,
+          temperature: 0.7
+        };
+      }
+
+      // Use fetch for the API call
+      const response = await fetch(`${this.config.baseUrl}${this.config.endpoint}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody),
         signal: request.abortSignal
       });
 
@@ -129,9 +175,17 @@ class OpenRouterService {
       const data = await response.json();
       console.log('✅ API Response data:', data);
 
-      const content = data.choices?.[0]?.message?.content;
+      // Extract content based on provider response format
+      let content: string;
+      if (this.config.provider === 'anthropic') {
+        content = data.content?.[0]?.text;
+      } else {
+        // OpenAI and OpenRouter format
+        content = data.choices?.[0]?.message?.content;
+      }
+      
       if (!content) {
-        throw new Error('No content received from OpenRouter');
+        throw new Error(`No content received from ${this.config.provider}`);
       }
 
       console.log('📄 Raw content from AI:', content);
@@ -446,45 +500,81 @@ The app should be self-contained and work immediately when rendered with all but
   }
 }
 
-// Factory function to create service with environment config
-export function createOpenRouterService(agentType: string): OpenRouterService {
-  console.log('🏭 Factory: Creating OpenRouter service for agent:', agentType);
+// Factory function to create service with localStorage config
+export function createOpenRouterService(agentType: string): AIService {
+  console.log('🏭 Factory: Creating AI service for agent:', agentType);
   
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-  const baseUrl = import.meta.env.VITE_OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
+  // Get API keys and models from localStorage
+  let selectedProvider: 'openai' | 'anthropic' | 'openrouter' = 'openrouter';
+  let apiKey = '';
+  let model = '';
   
+  try {
+    const savedKeys = localStorage.getItem('agentic-os-api-keys');
+    const savedModels = localStorage.getItem('agentic-os-selected-models');
+    const savedCustomModels = localStorage.getItem('agentic-os-custom-models');
+    
+    if (savedKeys) {
+      const keys = JSON.parse(savedKeys);
+      const models = savedModels ? JSON.parse(savedModels) : {};
+      const customModels = savedCustomModels ? JSON.parse(savedCustomModels) : {};
+      
+      // Determine which provider to use based on available API keys
+      if (keys.openai && keys.openai.trim()) {
+        selectedProvider = 'openai';
+        apiKey = keys.openai;
+        model = models.openai === 'custom' ? customModels.openai : models.openai || 'gpt-4o';
+      } else if (keys.anthropic && keys.anthropic.trim()) {
+        selectedProvider = 'anthropic';
+        apiKey = keys.anthropic;
+        model = models.anthropic === 'custom' ? customModels.anthropic : models.anthropic || 'claude-3-5-sonnet-20241022';
+      } else if (keys.openrouter && keys.openrouter.trim()) {
+        selectedProvider = 'openrouter';
+        apiKey = keys.openrouter;
+        model = models.openrouter === 'custom' ? customModels.openrouter : models.openrouter || 'deepseek/deepseek-chat-v3-0324:free';
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Factory: Failed to load API keys from localStorage:', error);
+  }
+  
+  // Determine base URL based on provider
+  const baseUrlMap = {
+    openai: 'https://api.openai.com/v1',
+    anthropic: 'https://api.anthropic.com/v1',
+    openrouter: 'https://openrouter.ai/api/v1'
+  };
+  
+  const baseUrl = baseUrlMap[selectedProvider];
+  
+  // Determine the correct endpoint based on provider
+  let endpoint = '/chat/completions';
+  if (selectedProvider === 'anthropic') {
+    endpoint = '/messages';
+  }
+  
+  console.log('🔑 Factory: Selected provider:', selectedProvider);
   console.log('🔑 Factory: API Key check:', {
     hasApiKey: !!apiKey,
     apiKeyLength: apiKey?.length,
-    baseUrl: baseUrl
+    baseUrl: baseUrl,
+    model: model
   });
   
-  if (!apiKey || apiKey === 'your_openrouter_api_key_here') {
-    console.error('❌ Factory: Invalid API key detected');
-    throw new Error('OpenRouter API key not found or invalid. Please set VITE_OPENROUTER_API_KEY in your .env file.');
+  if (!apiKey || apiKey === '') {
+    console.warn('⚠️ Factory: No valid API key found - service will use demo mode');
   }
 
-  // Select model based on agent type
-  const modelMap = {
-    'app-generator': import.meta.env.VITE_APP_GENERATOR_MODEL,
-    'utility-agent': import.meta.env.VITE_UTILITY_AGENT_MODEL,
-    'widget-agent': import.meta.env.VITE_WIDGET_AGENT_MODEL,
-    'game-agent': import.meta.env.VITE_GAME_AGENT_MODEL,
-    'info-agent': import.meta.env.VITE_INFO_AGENT_MODEL
-  };
-
-  const model = modelMap[agentType as keyof typeof modelMap] || import.meta.env.VITE_APP_GENERATOR_MODEL || 'meta-llama/llama-3.1-8b-instruct:free';
-  
-  console.log('🤖 Factory: Selected model for', agentType, ':', model);
-
-  const service = new OpenRouterService({
+  const service = new AIService({
+    provider: selectedProvider,
     apiKey,
     baseUrl,
+    endpoint,
     model
   });
   
-  console.log('✅ Factory: OpenRouter service created successfully');
+  console.log('✅ Factory: AI service created successfully');
   return service;
 }
 
-export default OpenRouterService;
+export default AIService;
