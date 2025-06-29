@@ -474,9 +474,21 @@
     transform: scale(0.98);
     background: rgba(0, 122, 204, 0.08);
   }
+  
+  .select-prompt-btn,
+  .add-to-examples-btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    min-height: 44px; /* Touch-friendly height */
+  }
+  
+  .prompt-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 }
 
-/* Tab Navigation */
 .tab-navigation {
   display: flex;
   background: var(--bg-primary);

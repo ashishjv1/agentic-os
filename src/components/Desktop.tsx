@@ -653,21 +653,38 @@ const Desktop: React.FC<DesktopProps> = ({
                       </svg>
                     </button>
                   )}
-                  <button 
-                    className="icon-btn"
-                    onClick={() => {
-                      if (isMobile) {
-                        handleMobileExamplesOpen();
-                      } else {
-                        setIsPromptDrawerOpen(true);
-                      }
-                    }}
-                    title={isMobile ? "Example Prompts" : "Marketplace"}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19 7H16V6A4 4 0 0 0 8 6V7H5A1 1 0 0 0 4 8V19A3 3 0 0 0 7 22H17A3 3 0 0 0 20 19V8A1 1 0 0 0 19 7ZM10 6A2 2 0 0 1 14 6V7H10V6ZM18 19A1 1 0 0 1 17 20H7A1 1 0 0 1 6 19V9H8V10A1 1 0 0 0 10 10A1 1 0 0 0 10 8V9H14V10A1 1 0 0 0 16 10A1 1 0 0 0 14 8V9H18V19Z"/>
-                    </svg>
-                  </button>
+                  {isMobile ? (
+                    <>
+                      <button 
+                        className="icon-btn"
+                        onClick={handleMobileExamplesOpen}
+                        title="Example Prompts"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H8V4H20V16M16,6V14L13,11L10,14V6H16Z"/>
+                        </svg>
+                      </button>
+                      <button 
+                        className="icon-btn"
+                        onClick={() => setIsPromptDrawerOpen(true)}
+                        title="Marketplace"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M19 7H16V6A4 4 0 0 0 8 6V7H5A1 1 0 0 0 4 8V19A3 3 0 0 0 7 22H17A3 3 0 0 0 20 19V8A1 1 0 0 0 19 7ZM10 6A2 2 0 0 1 14 6V7H10V6ZM18 19A1 1 0 0 1 17 20H7A1 1 0 0 1 6 19V9H8V10A1 1 0 0 0 10 10A1 1 0 0 0 10 8V9H14V10A1 1 0 0 0 16 10A1 1 0 0 0 14 8V9H18V19Z"/>
+                        </svg>
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      className="icon-btn"
+                      onClick={() => setIsPromptDrawerOpen(true)}
+                      title="Marketplace"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 7H16V6A4 4 0 0 0 8 6V7H5A1 1 0 0 0 4 8V19A3 3 0 0 0 7 22H17A3 3 0 0 0 20 19V8A1 1 0 0 0 19 7ZM10 6A2 2 0 0 1 14 6V7H10V6ZM18 19A1 1 0 0 1 17 20H7A1 1 0 0 1 6 19V9H8V10A1 1 0 0 0 10 10A1 1 0 0 0 10 8V9H14V10A1 1 0 0 0 16 10A1 1 0 0 0 14 8V9H18V19Z"/>
+                      </svg>
+                    </button>
+                  )}
                   <button 
                     className="icon-btn"
                     onClick={onShowApiStatus}
