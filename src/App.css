@@ -53,3 +53,20 @@
     transform: scale(1.02);
   }
 }
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .app {
+    height: 100dvh; /* Use dynamic viewport height for mobile */
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(120, 120, 120, 0.02) 0%, transparent 60%),
+      radial-gradient(circle at 80% 20%, rgba(160, 160, 160, 0.015) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(35, 35, 35, 0.9) 50%, rgba(50, 50, 50, 0.85) 100%);
+  }
+}
