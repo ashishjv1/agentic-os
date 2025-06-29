@@ -7,7 +7,16 @@
   flex-direction: column;
   position: relative;
   margin: auto;
+  transition: width 0.3s ease, height 0.3s ease; /* Smooth size transitions */
   /* Remove window chrome - direct app display */
+}
+
+@media (max-width: 768px) {
+  .app-renderer {
+    min-width: 280px;
+    min-height: 200px;
+    margin: 5px;
+  }
 }
 
 .app-renderer::before {
@@ -30,6 +39,14 @@
   margin: 40px;
 }
 
+@media (max-width: 768px) {
+  .app-renderer.maximized {
+    width: calc(100vw - 20px) !important;
+    height: calc(100vh - 120px) !important;
+    margin: 10px;
+  }
+}
+
 .app-renderer.maximized .app-content {
   border-radius: var(--border-radius-sm);
 }
@@ -50,16 +67,16 @@
 /* Window Controls - Premium Clip/Tab Style */
 .window-controls {
   position: absolute;
-  top: -20px;
-  right: 16px;
+  top: 8px;
+  right: 8px;
   display: flex;
   gap: 6px;
   z-index: 1000;
 }
 
 .window-btn {
-  width: 32px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border: none;
   cursor: pointer;
   font-size: 14px;
@@ -71,13 +88,12 @@
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(20px);
-  border-radius: 6px 6px 0 0;
+  border-radius: 6px;
   color: rgba(255, 255, 255, 0.8);
   background: var(--glass-tertiary);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: none;
   box-shadow: 
-    0 -4px 8px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -93,13 +109,13 @@
     rgba(255, 255, 255, 0.05));
   opacity: 0;
   transition: opacity 0.3s ease;
-  border-radius: 6px 6px 0 0;
+  border-radius: 6px;
 }
 
 .window-btn:hover {
-  transform: translateY(-2px);
+  transform: scale(1.1);
   box-shadow: 
-    0 -8px 16px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 1);
 }
@@ -109,7 +125,7 @@
 }
 
 .window-btn:active {
-  transform: translateY(-1px);
+  transform: scale(0.95);
   transition: transform 0.1s ease;
 }
 
@@ -117,7 +133,7 @@
 .minimize-btn:hover {
   border-color: rgba(255, 193, 7, 0.3);
   box-shadow: 
-    0 -8px 16px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 193, 7, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -125,7 +141,7 @@
 .maximize-btn:hover {
   border-color: rgba(40, 167, 69, 0.3);
   box-shadow: 
-    0 -8px 16px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(40, 167, 69, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -133,7 +149,7 @@
 .close-btn:hover {
   border-color: rgba(220, 53, 69, 0.3);
   box-shadow: 
-    0 -8px 16px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(220, 53, 69, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -220,13 +236,13 @@
 
 /* Smooth entrance animation */
 .app-renderer {
-  animation: slideInUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  animation: slideInUp 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(10px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -237,20 +253,49 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .app-renderer {
-    margin: 10px;
     max-width: calc(100% - 20px);
-    border-radius: 8px;
+    border-radius: var(--mobile-border-radius);
   }
   
   .window-controls {
-    right: 16px;
-    gap: 6px;
+    right: 6px;
+    top: 6px;
+    gap: 4px;
   }
   
   .window-btn {
-    width: 28px;
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+    min-width: 24px;
+    min-height: 24px;
+  }
+  
+  .app-content {
+    border-radius: var(--mobile-border-radius-lg);
+  }
+  
+  .app-iframe {
+    border-radius: var(--mobile-border-radius-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .app-renderer {
+    margin: 5px;
+    max-width: calc(100% - 10px);
+  }
+  
+  .window-controls {
+    right: 4px;
+    top: 4px;
+    gap: 3px;
+  }
+  
+  .window-btn {
+    width: 20px;
     height: 20px;
-    font-size: 12px;
+    font-size: 10px;
   }
 }
 
@@ -262,6 +307,13 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   border-color: var(--accent-blue);
   transform: scale(1.01);
+}
+
+/* Disable hover effects on mobile to prevent sticky hover states */
+@media (max-width: 768px) {
+  .app-renderer:hover {
+    transform: none;
+  }
 }
 
 /* Focus states for accessibility */

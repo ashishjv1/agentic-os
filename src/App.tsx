@@ -8,42 +8,212 @@ import { debugEnvVars } from './utils/debug';
 import { testOpenRouterConnection } from './utils/testConnection';
 import './App.css';
 
-const AVAILABLE_AGENTS: Agent[] = [
+// Default fallback agents (using OpenRouter as fallback)
+const FALLBACK_AGENTS: Agent[] = [
   { 
     id: 'app-generator', 
     name: 'App Generator', 
-    description: 'Creates complex applications with DeepSeek V3 (Most Powerful)' 
+    description: 'Creates complex applications with DeepSeek V3 (Most Powerful)',
+    provider: 'openrouter',
+    model: 'deepseek/deepseek-chat'
   },
   { 
     id: 'utility-agent', 
     name: 'Utility Tools', 
-    description: 'Fast tools and calculators with DeepSeek V3' 
+    description: 'Fast tools and calculators with DeepSeek V3',
+    provider: 'openrouter',
+    model: 'deepseek/deepseek-chat'
   },
   { 
     id: 'widget-agent', 
     name: 'Widgets', 
-    description: 'UI components with WizardLM 2 (8x22B)' 
+    description: 'UI components with WizardLM 2 (8x22B)',
+    provider: 'openrouter',
+    model: 'microsoft/wizardlm-2-8x22b'
   },
   { 
     id: 'game-agent', 
     name: 'Games', 
-    description: 'Creative games with Claude 3 Haiku' 
+    description: 'Creative games with Claude 3 Haiku',
+    provider: 'openrouter',
+    model: 'anthropic/claude-3-haiku'
   },
   { 
     id: 'info-agent', 
     name: 'Info Search', 
-    description: 'Latest news, research & information with AI search' 
+    description: 'Latest news, research & information with AI search',
+    provider: 'openrouter',
+    model: 'deepseek/deepseek-chat'
   },
 ];
 
+interface ApiKeys {
+  openai: string;
+  anthropic: string;
+  openrouter: string;
+}
+
+interface SelectedModels {
+  openai: string;
+  anthropic: string;
+  openrouter: string;
+}
+
+interface CustomModels {
+  openai: string;
+  anthropic: string;
+  openrouter: string;
+}
+
+// Generate available agents based on API keys, selected models, and custom models
+const getAvailableAgents = (apiKeys: ApiKeys, selectedModels: SelectedModels, customModels: CustomModels): Agent[] => {
+  const agents: Agent[] = [];
+
+  // Helper function to get the actual model name
+  const getActualModel = (provider: keyof SelectedModels) => {
+    return selectedModels[provider] === 'custom' ? customModels[provider] : selectedModels[provider];
+  };
+
+  // Always show all agents, but indicate if API key is configured
+  
+  // OpenAI agents
+  const openaiModel = getActualModel('openai');
+  agents.push({
+    id: 'openai-agent',
+    name: 'OpenAI Assistant',
+    description: apiKeys.openai 
+      ? `Powered by ${openaiModel || selectedModels.openai}` 
+      : 'Configure OpenAI API key to use',
+    provider: 'openai',
+    model: openaiModel || selectedModels.openai,
+    requiresApiKey: !apiKeys.openai
+  });
+
+  // Anthropic agents
+  const anthropicModel = getActualModel('anthropic');
+  agents.push({
+    id: 'anthropic-agent',
+    name: 'Claude Assistant',
+    description: apiKeys.anthropic 
+      ? `Powered by ${anthropicModel || selectedModels.anthropic}` 
+      : 'Configure Anthropic API key to use',
+    provider: 'anthropic',
+    model: anthropicModel || selectedModels.anthropic,
+    requiresApiKey: !apiKeys.anthropic
+  });
+
+  // OpenRouter agents
+  const openrouterModel = getActualModel('openrouter');
+  agents.push({
+    id: 'openrouter-agent',
+    name: 'OpenRouter Assistant',
+    description: apiKeys.openrouter 
+      ? `Powered by ${openrouterModel || selectedModels.openrouter}` 
+      : 'Configure OpenRouter API key to use',
+    provider: 'openrouter',
+    model: openrouterModel || selectedModels.openrouter,
+    requiresApiKey: !apiKeys.openrouter
+  });
+
+  // If no agents available from API keys, return fallback agents
+  if (agents.length === 0) {
+    return FALLBACK_AGENTS;
+  }
+
+  return agents;
+};
+
 function App() {
-  const [selectedAgent, setSelectedAgent] = useState<Agent>(AVAILABLE_AGENTS[0]);
+  // API Keys state
+  const [apiKeys, setApiKeys] = useState<ApiKeys>(() => {
+    try {
+      const saved = localStorage.getItem('agentic-os-api-keys');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.warn('Failed to load API keys from localStorage:', error);
+    }
+    return { openai: '', anthropic: '', openrouter: '' };
+  });
+
+  // Selected models state
+  const [selectedModels, setSelectedModels] = useState<SelectedModels>(() => {
+    try {
+      const saved = localStorage.getItem('agentic-os-selected-models');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.warn('Failed to load selected models from localStorage:', error);
+    }
+    return {
+      openai: 'gpt-4o',
+      anthropic: 'claude-3-5-sonnet-20241022',
+      openrouter: 'deepseek/deepseek-chat'
+    };
+  });
+
+  // Custom models state
+  const [customModels, setCustomModels] = useState<CustomModels>(() => {
+    try {
+      const saved = localStorage.getItem('agentic-os-custom-models');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.warn('Failed to load custom models from localStorage:', error);
+    }
+    return {
+      openai: '',
+      anthropic: '',
+      openrouter: ''
+    };
+  });
+
+  // Available agents based on API keys, selected models, and custom models
+  const [availableAgents, setAvailableAgents] = useState<Agent[]>(() => getAvailableAgents(apiKeys, selectedModels, customModels));
+  const [selectedAgent, setSelectedAgent] = useState<Agent>(availableAgents[0]);
+  
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [appHistory, setAppHistory] = useState<GeneratedApp[]>([]);
   const [currentApp, setCurrentApp] = useState<GeneratedApp | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showApiStatus, setShowApiStatus] = useState(false);
   const [currentAbortController, setCurrentAbortController] = useState<AbortController | null>(null);
+
+  // Update available agents when API keys change
+  useEffect(() => {
+    const newAvailableAgents = getAvailableAgents(apiKeys, selectedModels, customModels);
+    setAvailableAgents(newAvailableAgents);
+    
+    // If current selected agent is not available anymore, switch to first available
+    if (!newAvailableAgents.find(agent => agent.id === selectedAgent.id)) {
+      setSelectedAgent(newAvailableAgents[0]);
+    }
+  }, [apiKeys, selectedAgent.id, selectedModels, customModels]);
+
+  const handleApiKeysUpdate = (newApiKeys: ApiKeys) => {
+    setApiKeys(newApiKeys);
+  };
+
+  const handleSelectedModelsUpdate = (newSelectedModels: SelectedModels) => {
+    setSelectedModels(newSelectedModels);
+  };
+
+  const handleCustomModelsUpdate = (newCustomModels: CustomModels) => {
+    setCustomModels(newCustomModels);
+  };
+
+  const handleAgentSelection = (agent: Agent) => {
+    if (agent.requiresApiKey) {
+      // Show API configuration modal with specific message
+      alert(`Please configure your ${agent.provider?.toUpperCase()} API key to use this agent. Click the settings button to add your API key.`);
+      setShowApiStatus(true);
+      return;
+    }
+    setSelectedAgent(agent);
+  };
 
   // Debug environment variables on component mount
   useEffect(() => {
@@ -160,16 +330,31 @@ function App() {
     console.log('Prompt:', prompt);
     console.log('Agent:', agent.name);
     
+    // Check for selected instructions and append them to the prompt
+    const selectedInstructions = JSON.parse(localStorage.getItem('selectedInstructions') || '{}');
+    const selectedInstructionId = selectedInstructions[agent.id];
+    
+    let enhancedPrompt = prompt;
+    
+    if (selectedInstructionId) {
+      // Get the instruction content (this would ideally come from a service)
+      const instructionContent = getInstructionContent(selectedInstructionId);
+      if (instructionContent) {
+        enhancedPrompt = `${prompt}\n\nAdditional Instructions: ${instructionContent}`;
+        console.log('📝 Enhanced prompt with instructions:', enhancedPrompt);
+      }
+    }
+    
     try {
       // Create OpenRouter service for the specific agent
       console.log('📡 Creating OpenRouter service...');
       const openRouterService = createOpenRouterService(agent.id);
       console.log('✅ OpenRouter service created');
       
-      // Generate app using AI
+      // Generate app using AI with enhanced prompt
       console.log('🤖 Calling OpenRouter API...');
       const response = await openRouterService.generateApp({
-        prompt,
+        prompt: enhancedPrompt,
         agentType: agent.id,
         context: `Previous apps: ${appHistory.map(app => app.name).slice(0, 3).join(', ')}`,
         abortSignal
@@ -195,7 +380,7 @@ function App() {
       console.log('🔄 Falling back to mock generation...');
       
       // Fallback to mock generation if API fails
-      return await generateMockApp(prompt, agent, abortSignal);
+      return await generateMockApp(enhancedPrompt, agent, abortSignal);
     }
   };
 
@@ -395,6 +580,22 @@ function App() {
     };
   };
 
+  // Helper function to get instruction content by ID
+  const getInstructionContent = (instructionId: string): string | null => {
+    const instructionsMap: Record<string, string> = {
+      'inst-responsive': 'Make sure the application is fully responsive and works well on mobile devices. Include touch-friendly controls and proper viewport scaling.',
+      'inst-accessibility': 'Include proper accessibility features like keyboard navigation, ARIA labels, high contrast colors, and screen reader compatibility.',
+      'inst-dark-mode': 'Include a dark mode toggle that switches between light and dark themes with smooth transitions.',
+      'inst-local-storage': 'Use localStorage to save and restore user data, settings, and preferences across browser sessions.',
+      'inst-export': 'Include export functionality to let users save their data as files (JSON, CSV, or text format).',
+      'inst-real-time': 'Include real-time updates and live data refresh functionality where appropriate.',
+      'inst-high-score': 'Include high score tracking with localStorage persistence and score display functionality.',
+      'inst-sound': 'Include sound effects and audio feedback for game actions. Use Web Audio API or HTML5 audio elements.'
+    };
+    
+    return instructionsMap[instructionId] || null;
+  };
+
   const switchToApp = (app: GeneratedApp) => {
     if (currentApp) {
       setAppHistory(prev => [currentApp, ...prev.filter(a => a.id !== app.id)]);
@@ -423,13 +624,6 @@ function App() {
     }
   };
 
-  const removeAppFromHistory = (appId: string) => {
-    setAppHistory(prev => prev.filter(app => app.id !== appId));
-    if (currentApp?.id === appId) {
-      closeCurrentApp();
-    }
-  };
-
   const cancelGeneration = () => {
     if (currentAbortController) {
       console.log('🛑 Cancelling generation...');
@@ -453,19 +647,16 @@ function App() {
     <div className="app">
       <Desktop 
         currentApp={currentApp}
-        appHistory={appHistory}
-        onSwitchToApp={switchToApp}
         onCloseApp={closeCurrentApp}
         onMinimizeApp={minimizeCurrentApp}
-        onRemoveApp={removeAppFromHistory}
         onShowApiStatus={() => setShowApiStatus(true)}
         onGenerateApp={handleSendMessage}
         selectedAgent={selectedAgent.id}
       />
       <ChatBar
         selectedAgent={selectedAgent}
-        onAgentChange={setSelectedAgent}
-        availableAgents={AVAILABLE_AGENTS}
+        onAgentChange={handleAgentSelection}
+        availableAgents={availableAgents}
         onSendMessage={handleSendMessage}
         onCancelGeneration={cancelGeneration}
         chatHistory={chatHistory}
@@ -477,6 +668,9 @@ function App() {
       <ApiStatus 
         isVisible={showApiStatus}
         onClose={() => setShowApiStatus(false)}
+        onApiKeysUpdate={handleApiKeysUpdate}
+        onSelectedModelsUpdate={handleSelectedModelsUpdate}
+        onCustomModelsUpdate={handleCustomModelsUpdate}
       />
     </div>
   );

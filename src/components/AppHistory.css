@@ -36,7 +36,7 @@
 }
 
 .history-item {
-  padding: 12px;
+  padding: 12px 40px 12px 12px; /* Extra right padding for delete button */
   margin: 4px 0;
   background: var(--bg-primary);
   border-radius: var(--border-radius);
@@ -57,6 +57,7 @@
 
 .history-item:hover .history-item-remove {
   opacity: 1;
+  background: rgba(255, 95, 86, 1);
 }
 
 .history-item-content {
@@ -85,21 +86,24 @@
 }
 
 .history-item-remove {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 95, 86, 0.8);
+  background: rgba(255, 95, 86, 0.9);
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  opacity: 0;
+  opacity: 0.7; /* Make it slightly visible by default */
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-left: 8px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
 }
 
 .history-item-remove:hover {

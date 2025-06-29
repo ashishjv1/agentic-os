@@ -49,11 +49,16 @@ const AgentSelector: React.FC<AgentSelectorProps> = ({
           {agents.map((agent) => (
             <div
               key={agent.id}
-              className={`dropdown-item ${selectedAgent.id === agent.id ? 'selected' : ''}`}
+              className={`dropdown-item ${selectedAgent.id === agent.id ? 'selected' : ''} ${agent.requiresApiKey ? 'requires-api-key' : ''}`}
               onClick={() => handleAgentSelect(agent)}
             >
               <div className="agent-option-content">
-                <span className="agent-name">{agent.name}</span>
+                <span className="agent-name">
+                  {agent.name}
+                  {agent.requiresApiKey && (
+                    <span className="api-key-required">🔑</span>
+                  )}
+                </span>
                 <span className="agent-description">{agent.description}</span>
               </div>
             </div>

@@ -13,12 +13,20 @@
   color: var(--text-primary);
   padding: 16px 24px 16px 50px;
   border-radius: var(--border-radius-lg);
-  font-size: 15px;
+  font-size: max(var(--font-size-base), 16px); /* Use base font size but minimum 16px to prevent zoom on iOS */
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   outline: none;
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-glass);
   width: 100%;
+}
+
+@media (max-width: 768px) {
+  .chat-input-field {
+    padding: 14px 20px 14px 40px;
+    font-size: 16px;
+    border-radius: var(--mobile-border-radius-lg);
+  }
 }
 
 .chat-input-field:focus {
@@ -55,6 +63,16 @@
   height: 48px;
   position: relative;
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .send-button {
+    width: var(--mobile-touch-target);
+    height: var(--mobile-touch-target);
+    padding: 10px;
+    min-width: var(--mobile-touch-target);
+    min-height: var(--mobile-touch-target);
+  }
 }
 
 .send-button::before {
@@ -115,6 +133,16 @@
   position: relative;
   overflow: hidden;
   animation: pulseCancel 2s infinite;
+}
+
+@media (max-width: 768px) {
+  .cancel-button {
+    width: var(--mobile-touch-target);
+    height: var(--mobile-touch-target);
+    padding: 10px;
+    min-width: var(--mobile-touch-target);
+    min-height: var(--mobile-touch-target);
+  }
 }
 
 .cancel-button::before {

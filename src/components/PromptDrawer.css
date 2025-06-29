@@ -58,7 +58,7 @@
 
 .close-button:hover {
   background: var(--accent-blue);
-  color: white;
+  color: #ffffff;
 }
 
 .agent-info {
@@ -191,7 +191,7 @@
 
 .default-badge {
   background: var(--accent-blue);
-  color: white;
+  color: #ffffff;
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -386,4 +386,59 @@
   .prompt-drawer {
     width: 100%;
   }
+}
+
+/* Tab Navigation */
+.tab-navigation {
+  display: flex;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none !important;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  min-height: auto !important;
+}
+
+.tab-button:hover {
+  color: var(--text-primary);
+  background: var(--glass-tertiary) !important;
+  transform: none !important;
+}
+
+.tab-button.active {
+  color: var(--accent-blue);
+  border-bottom-color: var(--accent-blue) !important;
+  background: var(--glass-secondary) !important;
+}
+
+.section-header {
+  padding: 1rem 1.5rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1rem;
+}
+
+.section-header h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.section-description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.4;
 }

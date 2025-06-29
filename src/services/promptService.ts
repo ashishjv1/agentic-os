@@ -2,7 +2,6 @@ export interface SimplePrompt {
   id: string;
   name: string;
   description: string;
-  category: string;
   agentPrompt: string;
   isDefault?: boolean;
 }
@@ -11,159 +10,73 @@ export interface PromptSelections {
   [agentType: string]: string; // Selected prompt ID for each agent
 }
 
-// Curated prompt marketplace
+// General prompts that work for all agent types
 export const PROMPT_MARKETPLACE: SimplePrompt[] = [
-  // App Generator Prompts
   {
-    id: 'app-gen-default',
-    name: 'Standard Apps',
-    description: 'General purpose applications with good functionality',
-    category: 'app-generator',
-    agentPrompt: `You specialize in creating interactive applications like calculators, converters, text editors, forms, and productivity tools. Focus on functionality and user experience.`,
+    id: 'standard',
+    name: 'Standard',
+    description: 'Balanced approach with good functionality and UX',
+    agentPrompt: `Create a well-designed, functional application with good user experience. Focus on clean interface, intuitive controls, and reliable functionality.`,
     isDefault: true
   },
   {
-    id: 'app-gen-advanced',
+    id: 'advanced',
     name: 'Advanced Features',
-    description: 'Apps with more sophisticated features and better UI/UX',
-    category: 'app-generator',
-    agentPrompt: `You are an expert at creating advanced interactive applications with sophisticated features. Focus on creating apps with multiple functions, data persistence using localStorage, advanced calculations, rich UI components, drag-and-drop interfaces, and professional-grade user experiences. Include features like export/import, keyboard shortcuts, and advanced state management.`
+    description: 'Sophisticated features and enhanced capabilities',
+    agentPrompt: `Create an advanced application with sophisticated features and enhanced capabilities. Include multiple functions, data persistence using localStorage, keyboard shortcuts, export/import options, and professional-grade user experience. Focus on power user features and advanced functionality.`
   },
   {
-    id: 'app-gen-minimal',
+    id: 'minimal',
     name: 'Clean & Simple',
-    description: 'Minimalist apps focused on core functionality',
-    category: 'app-generator',
-    agentPrompt: `You specialize in creating clean, minimalist applications that focus on core functionality. Prioritize simplicity, fast loading, and intuitive interfaces. Remove any unnecessary features and create apps that do one thing exceptionally well with beautiful, uncluttered designs.`
-  },
-
-  // Utility Agent Prompts
-  {
-    id: 'util-default',
-    name: 'Basic Tools',
-    description: 'Simple utility tools for everyday tasks',
-    category: 'utility-agent',
-    agentPrompt: `You create simple utility tools like timers, counters, unit converters, password generators, and small helper apps. Prioritize simplicity and usefulness.`,
-    isDefault: true
+    description: 'Minimalist design focused on core functionality',
+    agentPrompt: `Create a clean, minimalist application that focuses on core functionality. Prioritize simplicity, fast loading, and intuitive interfaces. Remove unnecessary features and create something that does one thing exceptionally well with beautiful, uncluttered design.`
   },
   {
-    id: 'util-productivity',
+    id: 'visual',
+    name: 'Visual & Animated',
+    description: 'Rich visuals with smooth animations and effects',
+    agentPrompt: `Create a visually stunning application with smooth animations, transitions, and dynamic effects. Include CSS animations, hover effects, loading animations, interactive visual feedback, and delightful micro-interactions. Focus on creating something that's not just functional but also visually engaging.`
+  },
+  {
+    id: 'productivity',
     name: 'Productivity Focus',
-    description: 'Tools designed to boost productivity and efficiency',
-    category: 'utility-agent',
-    agentPrompt: `You create productivity-focused utility tools that help users work more efficiently. Include features like batch processing, automation, keyboard shortcuts, quick actions, time-saving workflows, and integration capabilities. Focus on tools that eliminate repetitive tasks and streamline common operations.`
+    description: 'Designed to boost efficiency and streamline workflows',
+    agentPrompt: `Create a productivity-focused application that helps users work more efficiently. Include features like batch processing, automation, keyboard shortcuts, quick actions, time-saving workflows, and integration capabilities. Focus on eliminating repetitive tasks and streamlining common operations.`
   },
   {
-    id: 'util-developer',
-    name: 'Developer Tools',
-    description: 'Utilities specifically designed for developers',
-    category: 'utility-agent',
-    agentPrompt: `You create developer-focused utility tools like code formatters, hash generators, JSON validators, regex testers, color pickers, and API testing tools. Include features like syntax highlighting, code validation, copy-to-clipboard functionality, and developer-friendly interfaces with technical precision.`
-  },
-
-  // Widget Agent Prompts
-  {
-    id: 'widget-default',
-    name: 'Dashboard Widgets',
-    description: 'Standard widgets for dashboards and displays',
-    category: 'widget-agent',
-    agentPrompt: `You build dashboard widgets like clocks, weather displays, progress bars, charts, and status indicators. Focus on visual appeal and real-time updates.`,
-    isDefault: true
+    id: 'data-driven',
+    name: 'Data & Analytics',
+    description: 'Focus on data visualization and analytical features',
+    agentPrompt: `Create a data-driven application that excels at presenting and analyzing information. Include charts, graphs, meters, progress indicators, statistical displays, comparison tables, and analytical tools. Focus on clear data presentation, interactive visualizations, and helping users understand complex information.`
   },
   {
-    id: 'widget-animated',
-    name: 'Animated Widgets',
-    description: 'Widgets with smooth animations and transitions',
-    category: 'widget-agent',
-    agentPrompt: `You create visually stunning dashboard widgets with smooth animations, transitions, and dynamic effects. Include CSS animations, hover effects, loading animations, and interactive visual feedback. Focus on creating widgets that are not just functional but also delightful to interact with.`
+    id: 'interactive',
+    name: 'Highly Interactive',
+    description: 'Rich interactivity with engaging user experience',
+    agentPrompt: `Create a highly interactive application with engaging user experience. Include drag-and-drop interfaces, real-time updates, interactive elements, responsive feedback, dynamic content, and features that encourage user engagement. Focus on creating an application that's fun and satisfying to use.`
   },
   {
-    id: 'widget-data',
-    name: 'Data Visualization',
-    description: 'Widgets focused on displaying and visualizing data',
-    category: 'widget-agent',
-    agentPrompt: `You specialize in creating data visualization widgets including charts, graphs, meters, progress indicators, and statistical displays. Focus on clear data presentation, interactive charts, real-time updates, and professional-looking data visualizations that make complex information easy to understand.`
-  },
-
-  // Game Agent Prompts
-  {
-    id: 'game-default',
-    name: 'Classic Games',
-    description: 'Traditional games with standard rules',
-    category: 'game-agent',
-    agentPrompt: `You create simple games like tic-tac-toe, memory games, word games, puzzles, and interactive entertainment. Emphasize fun gameplay and clear rules.`,
-    isDefault: true
-  },
-  {
-    id: 'game-puzzle',
-    name: 'Brain Puzzles',
-    description: 'Challenging puzzles and brain training games',
-    category: 'game-agent',
-    agentPrompt: `You create challenging brain puzzle games that test logic, memory, pattern recognition, and problem-solving skills. Include features like difficulty levels, scoring systems, hints, time challenges, and progressive difficulty. Focus on games that are educational and mentally stimulating.`
-  },
-  {
-    id: 'game-casual',
-    name: 'Casual Fun',
-    description: 'Relaxing and easy-to-play casual games',
-    category: 'game-agent',
-    agentPrompt: `You create casual, relaxing games that are easy to pick up and play. Focus on stress-free gameplay, pleasant visuals, simple controls, and games that can be enjoyed in short sessions. Include calming colors, gentle animations, and gameplay that's more about relaxation than competition.`
-  },
-
-  // Information Agent Prompts
-  {
-    id: 'info-default',
-    name: 'Research & News',
-    description: 'Current information and news with citations',
-    category: 'info-agent',
-    agentPrompt: `You specialize in creating information apps that display current news, research results, fact sheets, and knowledge summaries. Focus on presenting information in an organized, readable format with proper citations and sources. Create apps that display research results, news summaries, fact comparisons, timelines, and informational dashboards.`,
-    isDefault: true
-  },
-  {
-    id: 'info-academic',
-    name: 'Academic Research',
-    description: 'Scholarly format with detailed citations and analysis',
-    category: 'info-agent',
-    agentPrompt: `You are an academic research specialist creating scholarly information apps. Present information with detailed citations, methodology notes, confidence levels, and academic formatting. Include sections for abstract, key findings, methodology, limitations, and references. Focus on credibility, peer-review quality, and scientific rigor.`
-  },
-  {
-    id: 'info-news',
-    name: 'Breaking News',
-    description: 'News-style layout with headlines and summaries',
-    category: 'info-agent',
-    agentPrompt: `You are a news specialist creating news-style information apps. Present information as breaking news with compelling headlines, lead paragraphs, quotes, and timeline of events. Include news-style formatting with bylines, datelines, and news hierarchy. Focus on timeliness, relevance, and journalistic presentation.`
-  },
-  {
-    id: 'info-comparison',
-    name: 'Comparative Analysis',
-    description: 'Side-by-side comparisons and analysis tables',
-    category: 'info-agent',
-    agentPrompt: `You specialize in creating comparative analysis apps that present information through side-by-side comparisons, pros/cons tables, feature matrices, and analytical breakdowns. Include comparison charts, scoring systems, and decision-making frameworks. Focus on helping users understand differences and make informed choices.`
-  },
-  {
-    id: 'info-timeline',
-    name: 'Timeline & History',
-    description: 'Chronological presentation with historical context',
-    category: 'info-agent',
-    agentPrompt: `You create timeline and historical information apps that present information chronologically. Include interactive timelines, historical context, cause-and-effect relationships, and temporal analysis. Focus on helping users understand how events unfold over time and their interconnections.`
+    id: 'professional',
+    name: 'Professional Grade',
+    description: 'Enterprise-quality with robust features',
+    agentPrompt: `Create a professional-grade application suitable for business or enterprise use. Include robust error handling, data validation, security considerations, accessibility features, comprehensive functionality, and polished interface. Focus on reliability, scalability, and professional presentation.`
   }
 ];
 
 class PromptService {
   private static STORAGE_KEY = 'agentic-os-prompt-selections';
 
-  static getPromptsByCategory(category: string): SimplePrompt[] {
-    return PROMPT_MARKETPLACE.filter(prompt => prompt.category === category);
+  static getAllPrompts(): SimplePrompt[] {
+    return PROMPT_MARKETPLACE;
   }
 
   static getPromptById(id: string): SimplePrompt | undefined {
     return PROMPT_MARKETPLACE.find(prompt => prompt.id === id);
   }
 
-  static getDefaultPrompt(category: string): SimplePrompt {
-    const defaultPrompt = PROMPT_MARKETPLACE.find(
-      prompt => prompt.category === category && prompt.isDefault
-    );
-    return defaultPrompt || PROMPT_MARKETPLACE.find(prompt => prompt.category === category)!;
+  static getDefaultPrompt(): SimplePrompt {
+    const defaultPrompt = PROMPT_MARKETPLACE.find(prompt => prompt.isDefault);
+    return defaultPrompt || PROMPT_MARKETPLACE[0];
   }
 
   static getSelectedPrompts(): PromptSelections {
@@ -192,7 +105,7 @@ class PromptService {
       if (prompt) return prompt;
     }
     
-    return this.getDefaultPrompt(agentType);
+    return this.getDefaultPrompt();
   }
 
   static selectPrompt(agentType: string, promptId: string): void {

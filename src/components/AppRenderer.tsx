@@ -13,9 +13,19 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
   const [isLoading, setIsLoading] = useState(true);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [contentSize, setContentSize] = useState({ 
-    width: '480px', 
-    height: '360px' 
+  const [contentSize, setContentSize] = useState(() => {
+    // Start with more reasonable responsive sizing
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
+    
+    // Calculate initial size based on viewport, but with reasonable constraints
+    const initialWidth = Math.min(600, Math.max(320, viewportWidth * 0.6));
+    const initialHeight = Math.min(450, Math.max(240, viewportHeight * 0.5));
+    
+    return { 
+      width: `${initialWidth}px`, 
+      height: `${initialHeight}px` 
+    };
   });
 
   const handleClose = () => {
@@ -66,17 +76,17 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
           const adjustedWidth = Math.min(width, maxWidth);
           const adjustedHeight = Math.min(height, maxHeight);
           
-          // Only update if there's a meaningful change
+          // Only update if there's a meaningful change (reduced threshold)
           const currentWidth = parseInt(contentSize.width);
           const currentHeight = parseInt(contentSize.height);
           
-          if (Math.abs(adjustedWidth - currentWidth) > 30 || Math.abs(adjustedHeight - currentHeight) > 30) {
+          if (Math.abs(adjustedWidth - currentWidth) > 50 || Math.abs(adjustedHeight - currentHeight) > 50) {
             setContentSize({
               width: `${adjustedWidth}px`,
               height: `${adjustedHeight}px`
             });
           }
-        }, 200);
+        }, 100);
       }
     } catch (error) {
       // Fallback to smaller responsive size
@@ -155,7 +165,7 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
         // Detect content size once after content is fully rendered
         setTimeout(() => {
           detectContentSize();
-        }, 1000); // Give enough time for content to render
+        }, 500); // Reduced from 1000ms to 500ms for faster response
         
         iframe.removeEventListener('load', handleLoad);
       };

@@ -30,6 +30,24 @@
   --font-family-main: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
   --font-family-panel: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
   --font-size-base: 16px;
+  
+  /* Mobile responsive variables */
+  --mobile-padding: 16px;
+  --mobile-border-radius: 12px;
+  --mobile-border-radius-sm: 8px;
+  --mobile-border-radius-lg: 16px;
+  --mobile-font-size: 16px;
+  --mobile-touch-target: 44px;
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 768px) {
+  :root {
+    --border-radius: var(--mobile-border-radius);
+    --border-radius-sm: var(--mobile-border-radius-sm);
+    --border-radius-lg: var(--mobile-border-radius-lg);
+    --font-size-base: var(--mobile-font-size);
+  }
 }
 
 * {
@@ -51,10 +69,76 @@ body {
   color: var(--text-primary);
   overflow: hidden;
   height: 100vh;
+  /* Disable overflow on mobile to prevent bounce scrolling */
+  height: 100dvh; /* Use dynamic viewport height for mobile */
   backdrop-filter: blur(20px);
   font-weight: 400;
   letter-spacing: -0.01em;
   transition: all 0.3s ease;
+  /* Prevent zoom on mobile */
+  -webkit-text-size-adjust: 100%;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Ensure font size cascades to all elements */
+#root {
+  font-size: var(--font-size-base);
+}
+
+/* Override specific component font sizes to use base font size */
+.chat-input,
+.agent-selector,
+.settings-select,
+.api-key-input,
+.model-select,
+.custom-model-field,
+button,
+input,
+select,
+textarea,
+.example-item,
+.app-renderer,
+.desktop-welcome {
+  font-size: inherit;
+}
+
+/* Debug: Ensure font size variable is properly applied */
+[data-font-debug] {
+  border: 2px solid red !important;
+}
+
+/* Main application container should inherit font size */
+.app {
+  font-size: var(--font-size-base);
+}
+
+/* Desktop and main content areas */
+.desktop,
+.desktop-welcome,
+.examples-container {
+  font-size: inherit;
+}
+
+/* Settings panel */
+.settings-panel,
+.settings-option,
+.settings-label {
+  font-size: inherit;
+}
+
+/* Mobile body adjustments */
+@media (max-width: 768px) {
+  body {
+    height: 100vh; /* Fallback for older browsers */
+    height: 100dvh; /* Dynamic viewport height */
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
 }
 
 /* Light theme background override */
@@ -113,6 +197,17 @@ button {
   box-shadow: var(--shadow-glass);
   position: relative;
   overflow: hidden;
+  /* Ensure buttons are touch-friendly */
+  min-height: 36px;
+  -webkit-tap-highlight-color: rgba(0, 122, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  button {
+    min-height: var(--mobile-touch-target);
+    padding: 12px 16px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
 }
 
 button::before {
@@ -151,6 +246,17 @@ input, select, textarea {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(12px);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* Mobile optimizations */
+  font-size: 16px; /* Prevent zoom on iOS */
+  min-height: 36px;
+}
+
+@media (max-width: 768px) {
+  input, select, textarea {
+    min-height: var(--mobile-touch-target);
+    padding: 14px 16px;
+    border-radius: var(--mobile-border-radius-sm);
+  }
 }
 
 input:focus, select:focus, textarea:focus {
@@ -319,3 +425,77 @@ input:focus, select:focus, textarea:focus {
                   0 8px 24px rgba(0, 0, 0, 0.3),
                   inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
+
+/* Mobile-specific utility classes */
+.mobile-hidden {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: block !important;
+  }
+  
+  .mobile-flex {
+    display: flex !important;
+  }
+  
+  /* Touch-friendly scrollbars on mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+  }
+  
+  /* Disable hover effects on mobile to prevent sticky hover states */
+  button:hover {
+    transform: none;
+  }
+  
+  .glass-shimmer:hover::after {
+    left: -100%; /* Disable shimmer effect on mobile */
+  }
+}
+
+/* Prevent text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Safe area adjustments for mobile devices with notches */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Relative font size classes based on base font size */
+.font-xs { font-size: calc(var(--font-size-base) * 0.75); }    /* 12px when base is 16px */
+.font-sm { font-size: calc(var(--font-size-base) * 0.875); }   /* 14px when base is 16px */
+.font-base { font-size: var(--font-size-base); }               /* 16px default */
+.font-lg { font-size: calc(var(--font-size-base) * 1.125); }   /* 18px when base is 16px */
+.font-xl { font-size: calc(var(--font-size-base) * 1.25); }    /* 20px when base is 16px */
+.font-2xl { font-size: calc(var(--font-size-base) * 1.5); }    /* 24px when base is 16px */
+
+/* Update commonly used UI elements to use relative sizing */

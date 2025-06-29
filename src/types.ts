@@ -2,6 +2,9 @@ export interface Agent {
   id: string;
   name: string;
   description: string;
+  provider?: 'openai' | 'anthropic' | 'openrouter';
+  model?: string;
+  requiresApiKey?: boolean;
 }
 
 export interface ChatMessage {

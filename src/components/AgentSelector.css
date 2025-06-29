@@ -10,17 +10,20 @@
   width: 16px;
   height: 16px;
   background: transparent;
-  border: none;
+  border: none !important; /* Override global button border */
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  box-shadow: none !important; /* Remove any box-shadow */
+  backdrop-filter: none !important; /* Remove backdrop filter */
 }
 
 .agent-select:focus {
   outline: none;
+  border: none !important; /* Ensure no border on focus */
 }
 
 .agent-select svg {
@@ -131,6 +134,23 @@
   opacity: 0.9;
 }
 
+.dropdown-item.requires-api-key {
+  opacity: 0.7;
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.dropdown-item.requires-api-key:hover {
+  background: rgba(255, 193, 7, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.15);
+}
+
+.api-key-required {
+  margin-left: 8px;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
 .agent-option-content {
   padding: 16px 20px;
   display: flex;
@@ -139,14 +159,14 @@
 }
 
 .agent-name {
-  font-size: 14px;
+  font-size: calc(var(--font-size-base) * 0.875); /* 14px when base is 16px */
   font-weight: 600;
   color: inherit;
   line-height: 1.2;
 }
 
 .agent-description {
-  font-size: 12px;
+  font-size: calc(var(--font-size-base) * 0.75); /* 12px when base is 16px */
   color: var(--text-secondary);
   font-weight: 400;
   line-height: 1.3;

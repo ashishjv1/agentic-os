@@ -264,3 +264,220 @@
 [data-theme="light"] .api-status-overlay {
   background: rgba(255, 255, 255, 0.4);
 }
+
+/* API Key Management Styles */
+.api-keys-description {
+  margin: 0 0 20px 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.api-key-group {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.api-key-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.provider-info h5 {
+  margin: 0 0 2px 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.provider-description {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.api-key-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-indicator.connected {
+  color: var(--accent-color);
+  font-size: 0.8rem;
+  margin-left: 8px;
+}
+
+.api-key-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.api-key-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.api-key-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.api-key-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.api-key-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.api-key-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+}
+
+.api-key-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.api-key-btn:disabled:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+/* Model Selection Styles */
+.model-selection {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.model-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.model-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.model-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.model-select:hover {
+  border-color: var(--accent-color);
+}
+
+.model-select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+/* Custom Model Input Styles */
+.custom-model-input {
+  margin-top: 8px;
+}
+
+.custom-model-field {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+  font-family: 'Courier New', monospace;
+}
+
+.custom-model-field:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.custom-model-field:hover {
+  border-color: var(--accent-color);
+}
+
+.custom-model-field::placeholder {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Light theme override for custom model inputs */
+[data-theme="light"] .custom-model-field {
+  background: #ffffff;
+  color: #212529;
+}
+
+[data-theme="light"] .custom-model-field::placeholder {
+  color: #6c757d;
+}
+
+/* Light theme override for selects */
+[data-theme="light"] .model-select {
+  background: #ffffff;
+  color: #212529;
+}
+
+[data-theme="light"] .model-select option {
+  background: #ffffff;
+  color: #212529;
+}
+
+/* Responsive design for API key management */
+@media (max-width: 768px) {
+  .api-key-input-group {
+    flex-wrap: wrap;
+  }
+  
+  .api-key-input {
+    min-width: 0;
+    margin-bottom: 8px;
+  }
+  
+  .api-key-btn {
+    flex: 1;
+    min-width: 44px;
+  }
+}

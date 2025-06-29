@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { GeneratedApp } from '../types';
 import AppRenderer from './AppRenderer';
-import AppHistory from './AppHistory';
 import PromptDrawer from './PromptDrawer';
 import './Desktop.css';
 
 interface DesktopProps {
   currentApp: GeneratedApp | null;
-  appHistory: GeneratedApp[];
-  onSwitchToApp: (app: GeneratedApp) => void;
   onCloseApp: () => void;
   onMinimizeApp: () => void;
-  onRemoveApp: (appId: string) => void;
   onShowApiStatus: () => void;
   onGenerateApp?: (prompt: string) => void;
   selectedAgent: string;
@@ -19,11 +15,8 @@ interface DesktopProps {
 
 const Desktop: React.FC<DesktopProps> = ({ 
   currentApp, 
-  appHistory, 
-  onSwitchToApp, 
   onCloseApp,
   onMinimizeApp,
-  onRemoveApp,
   onShowApiStatus,
   onGenerateApp,
   selectedAgent
@@ -46,11 +39,9 @@ const Desktop: React.FC<DesktopProps> = ({
     return {
       theme: 'dark',
       accentColor: '#007acc',
-      panelOrientation: 'horizontal',
       fontSize: 'medium',
-      mainFont: 'Inter',
       panelFont: 'Inter',
-      animations: true
+      textColor: '#ffffff'
     };
   });
   
@@ -71,7 +62,12 @@ const Desktop: React.FC<DesktopProps> = ({
         root.style.setProperty('--bg-primary', '#ffffff');
         root.style.setProperty('--bg-secondary', '#f8f9fa');
         root.style.setProperty('--bg-tertiary', '#e9ecef');
-        root.style.setProperty('--text-primary', '#212529');
+        // Only set default text color if no custom color is set
+        if (!settings.textColor || settings.textColor === '#ffffff') {
+          root.style.setProperty('--text-primary', '#212529');
+        } else {
+          root.style.setProperty('--text-primary', settings.textColor);
+        }
         root.style.setProperty('--text-secondary', '#6c757d');
         root.style.setProperty('--border-color', 'rgba(0, 0, 0, 0.1)');
         root.style.setProperty('--glass-primary', 'rgba(255, 255, 255, 0.8)');
@@ -82,7 +78,8 @@ const Desktop: React.FC<DesktopProps> = ({
         root.style.setProperty('--bg-primary', '#1a1a1a');
         root.style.setProperty('--bg-secondary', '#2a2a2a');
         root.style.setProperty('--bg-tertiary', '#3a3a3a');
-        root.style.setProperty('--text-primary', '#ffffff');
+        // Always use the custom text color or default white for dark theme
+        root.style.setProperty('--text-primary', settings.textColor || '#ffffff');
         root.style.setProperty('--text-secondary', '#b0b0b0');
         root.style.setProperty('--border-color', 'rgba(255, 255, 255, 0.15)');
         root.style.setProperty('--glass-primary', 'rgba(26, 26, 26, 0.8)');
@@ -96,7 +93,7 @@ const Desktop: React.FC<DesktopProps> = ({
           root.style.setProperty('--bg-primary', '#1a1a1a');
           root.style.setProperty('--bg-secondary', '#2a2a2a');
           root.style.setProperty('--bg-tertiary', '#3a3a3a');
-          root.style.setProperty('--text-primary', '#ffffff');
+          root.style.setProperty('--text-primary', settings.textColor || '#ffffff');
           root.style.setProperty('--text-secondary', '#b0b0b0');
           root.style.setProperty('--border-color', 'rgba(255, 255, 255, 0.15)');
           root.style.setProperty('--glass-primary', 'rgba(26, 26, 26, 0.8)');
@@ -108,7 +105,11 @@ const Desktop: React.FC<DesktopProps> = ({
           root.style.setProperty('--bg-primary', '#ffffff');
           root.style.setProperty('--bg-secondary', '#f8f9fa');
           root.style.setProperty('--bg-tertiary', '#e9ecef');
-          root.style.setProperty('--text-primary', '#212529');
+          if (!settings.textColor || settings.textColor === '#ffffff') {
+            root.style.setProperty('--text-primary', '#212529');
+          } else {
+            root.style.setProperty('--text-primary', settings.textColor);
+          }
           root.style.setProperty('--text-secondary', '#6c757d');
           root.style.setProperty('--border-color', 'rgba(0, 0, 0, 0.1)');
           root.style.setProperty('--glass-primary', 'rgba(255, 255, 255, 0.8)');
@@ -125,9 +126,6 @@ const Desktop: React.FC<DesktopProps> = ({
       } else {
         root.style.setProperty('--font-size-base', '16px');
       }
-      
-      // Apply main font
-      root.style.setProperty('--font-family-main', `"${settings.mainFont}", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`);
       
       // Apply panel font
       root.style.setProperty('--font-family-panel', `"${settings.panelFont}", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`);
@@ -150,15 +148,41 @@ const Desktop: React.FC<DesktopProps> = ({
     
     // Default examples if nothing saved or error loading
     return [
-      { title: "Calculator", detailedPrompt: "Create a fully functional calculator with basic arithmetic operations (addition, subtraction, multiplication, division), clear button, and display screen. Include keyboard support and handle edge cases like division by zero." },
-      { title: "Todo List", detailedPrompt: "Build a todo list application with the ability to add new tasks, mark tasks as complete, delete tasks, and filter between all/active/completed tasks. Include local storage to persist tasks between sessions." },
-      { title: "Timer", detailedPrompt: "Create a countdown timer where users can set minutes and seconds, start/pause/reset the timer, and get visual/audio feedback when the timer reaches zero. Include a progress indicator." },
-      { title: "Game", detailedPrompt: "Design a simple interactive game like tic-tac-toe, memory matching, or a number guessing game. Include score tracking, game state management, and replay functionality." },
-      { title: "AI News", detailedPrompt: "Create a news dashboard that displays current AI and technology news with headlines, summaries, publication dates, and source links. Organize content in a clean, readable format." },
-      { title: "Research", detailedPrompt: "Build an information research tool that can display structured data about a topic, with sections for key facts, statistics, recent developments, and cited sources." },
-      { title: "Converter", detailedPrompt: "Design a unit converter tool supporting multiple categories (length, weight, temperature, currency) with instant conversion as the user types, conversion history, and clear input/output display." },
-      { title: "Charts", detailedPrompt: "Create a data visualization tool that can generate different types of charts (bar, line, pie) from user input data, with customizable colors and labels." },
-      { title: "Weather", detailedPrompt: "Build a weather dashboard showing current conditions, forecast, temperature trends, and weather icons. Include location-based information and multiple weather metrics." }
+      { title: "Expense Tracker", detailedPrompt: "Create a personal expense tracker with categories (food, transport, entertainment, etc.), monthly budget goals, visual spending charts, and the ability to add/edit/delete expenses. Include localStorage for data persistence and export functionality." },
+      { title: "Password Generator", detailedPrompt: "Build a secure password generator with customizable options: length (8-128 chars), include/exclude uppercase, lowercase, numbers, symbols. Add strength indicator, copy to clipboard, and save generated passwords with labels." },
+      { title: "Pomodoro Timer", detailedPrompt: "Design a Pomodoro productivity timer with 25-minute work sessions and 5-minute breaks. Include session counter, progress visualization, notification sounds, pause/resume functionality, and customizable time intervals." },
+      { title: "Habit Tracker", detailedPrompt: "Create a habit tracking app where users can add daily habits, mark them complete, view streak counters, and see visual progress with calendar heatmaps. Include weekly/monthly statistics and motivational quotes." },
+      { title: "Recipe Manager", detailedPrompt: "Build a recipe management app with ingredient lists, cooking instructions, prep/cook times, difficulty ratings, and search functionality. Include favorites, categories (breakfast, dinner, etc.), and shopping list generation." },
+      { title: "Markdown Editor", detailedPrompt: "Create a live markdown editor with split-pane view (editor/preview), syntax highlighting, export to HTML/PDF, table of contents generation, and common formatting shortcuts. Include dark/light themes." },
+      { title: "Color Palette Generator", detailedPrompt: "Design a color palette generator that creates harmonious color schemes from a base color. Include different harmony types (complementary, triadic, analogous), hex/rgb/hsl values, copy functionality, and palette export." },
+      { title: "QR Code Generator", detailedPrompt: "Build a QR code generator that converts text, URLs, WiFi credentials, or contact info into QR codes. Include customizable size, error correction levels, download functionality, and batch generation." },
+      { title: "Memory Game", detailedPrompt: "Create an interactive memory card matching game with multiple difficulty levels, themes (animals, flags, emojis), high score tracking, timer, move counter, and smooth flip animations." },
+      { title: "URL Shortener", detailedPrompt: "Design a URL shortener service with custom short codes, click tracking, expiration dates, QR code generation for short links, and analytics dashboard showing click statistics and geographic data." },
+      { title: "Drawing Canvas", detailedPrompt: "Build a digital drawing canvas with brush tools, color picker, different brush sizes, layers, undo/redo functionality, save/load drawings, and export as PNG/SVG. Include drawing templates and stamps." },
+      { title: "Word Counter", detailedPrompt: "Create a text analysis tool that counts words, characters, paragraphs, reading time estimation, keyword density, and provides readability scores. Include real-time analysis and text formatting options." },
+      { title: "Calculator", detailedPrompt: "Build a scientific calculator with standard arithmetic operations, advanced functions (sin, cos, tan, log, sqrt), memory storage, calculation history, keyboard shortcuts, and both basic and scientific modes with a clean, responsive interface." },
+      { title: "Todo List", detailedPrompt: "Create a feature-rich todo list with drag-and-drop reordering, priority levels, due dates, categories/tags, progress tracking, search functionality, data export, and local storage persistence. Include filters for completed, pending, and overdue tasks." },
+      { title: "Weather App", detailedPrompt: "Design a weather dashboard with current conditions, 7-day forecast, hourly predictions, weather maps, location search, favorite cities, weather alerts, and beautiful weather icons. Include temperature units toggle and background themes." },
+      { title: "Note Taking", detailedPrompt: "Build a note-taking app with rich text editing, categories/folders, tagging system, search functionality, export options (PDF, TXT), auto-save, and synchronization indicators. Include formatting toolbar and keyboard shortcuts." },
+      { title: "Image Resizer", detailedPrompt: "Create an image resizing tool that allows users to upload images, resize by percentage or exact dimensions, maintain aspect ratio, apply filters (brightness, contrast, saturation), and download processed images in multiple formats." },
+      { title: "Unit Converter", detailedPrompt: "Design a comprehensive unit converter supporting length, weight, temperature, volume, area, speed, and data units. Include search functionality, conversion history, favorite conversions, and real-time conversion as you type." },
+      { title: "Music Player", detailedPrompt: "Build a web-based music player with playlist creation, shuffle/repeat modes, volume control, progress bar with seek functionality, music library organization, and visualizer effects. Support multiple audio formats and keyboard controls." },
+      { title: "Chat Bot", detailedPrompt: "Create an AI-powered chatbot interface with conversation history, typing indicators, message timestamps, emoji support, conversation export, and different chat themes. Include predefined quick responses and conversation starters." },
+      { title: "Password Manager", detailedPrompt: "Build a secure password manager with categories for different accounts, search functionality, password strength indicators, auto-generate secure passwords, encrypted local storage, and master password protection with timeout." },
+      { title: "Code Snippet Manager", detailedPrompt: "Create a code snippet organizer with syntax highlighting for multiple languages, tags/categories, search functionality, copy to clipboard, export/import features, and code execution preview for web technologies." },
+      { title: "File Organizer", detailedPrompt: "Design a file management tool that helps organize files by type, date, size, with bulk rename functionality, duplicate detection, storage analytics, folder structure visualization, and batch file operations." },
+      { title: "Time Zone Converter", detailedPrompt: "Build a world clock and timezone converter with multiple cities, meeting scheduler across timezones, daylight saving time awareness, countdown timers, and time zone comparison view with visual time bars." },
+      { title: "Expense Splitter", detailedPrompt: "Create a bill splitting app for groups, with expense categorization, multiple split methods (equal, percentage, custom amounts), debt tracking between people, expense history, and settlement suggestions." },
+      { title: "Meditation Timer", detailedPrompt: "Design a meditation app with customizable session lengths, ambient sounds, guided breathing exercises, progress tracking, streak counters, different meditation types, and mindfulness reminders." },
+      { title: "Virtual Keyboard", detailedPrompt: "Build an on-screen virtual keyboard with multiple layouts (QWERTY, DVORAK, international), key sound effects, customizable themes, accessibility features, and support for special characters and emojis." },
+      { title: "Invoice Generator", detailedPrompt: "Create a professional invoice generator with client management, itemized billing, tax calculations, multiple templates, PDF export, payment tracking, recurring invoices, and company branding options." },
+      { title: "Flashcard App", detailedPrompt: "Build a study flashcard application with spaced repetition algorithm, multiple card types (text, image, audio), categories/decks, progress tracking, study statistics, and export/import functionality." },
+      { title: "Budget Planner", detailedPrompt: "Design a comprehensive budget planning tool with income/expense categories, monthly/yearly views, savings goals, spending alerts, visual charts, bill reminders, and financial goal tracking." },
+      { title: "Calendar Scheduler", detailedPrompt: "Create a calendar application with event creation, recurring events, reminders, different view modes (month, week, day), color-coded categories, event search, and integration with holiday calendars." },
+      { title: "Markdown to HTML", detailedPrompt: "Build a markdown to HTML converter with live preview, custom CSS styling options, syntax highlighting for code blocks, table support, export functionality, and common markdown extensions." },
+      { title: "Pixel Art Editor", detailedPrompt: "Design a pixel art creation tool with grid-based canvas, color palette, drawing tools (pencil, fill, line, rectangle), layers, animation frames, zoom functionality, and export as GIF/PNG." },
+      { title: "Screen Recorder", detailedPrompt: "Create a screen recording tool with area selection, webcam overlay, audio recording, countdown timer, recording controls, multiple output formats, and playback functionality with basic editing options." },
+      { title: "Link Organizer", detailedPrompt: "Build a bookmark manager with categories, tags, search functionality, link validation, duplicate detection, bulk import/export, visual previews, and sharing options for bookmark collections." }
     ];
   });
   
@@ -172,6 +196,22 @@ const Desktop: React.FC<DesktopProps> = ({
   }, [examples]);
   
   const [showAddExample, setShowAddExample] = useState(false);
+  
+  // Scroll form into view when opened
+  React.useEffect(() => {
+    if (showAddExample) {
+      setTimeout(() => {
+        const form = document.querySelector('.add-example-form');
+        if (form) {
+          form.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+        }
+      }, 100); // Small delay to allow DOM update
+    }
+  }, [showAddExample]);
   const [newExample, setNewExample] = useState('');
   const [newExampleTitle, setNewExampleTitle] = useState('');
   const [newExamplePrompt, setNewExamplePrompt] = useState('');
@@ -186,16 +226,8 @@ const Desktop: React.FC<DesktopProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [examplePosition, setExamplePosition] = useState(() => {
-    try {
-      const saved = localStorage.getItem('agentic-os-example-position');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (error) {
-      console.warn('Failed to load example position from localStorage:', error);
-    }
-    // Default position (inside the main area, top-right)
-    return { right: 20, top: 20 };
+    // Always start with default position on page load/refresh for consistent experience
+    return { right: 20, top: 80 };
   });
 
   // Save example position to localStorage
@@ -207,32 +239,39 @@ const Desktop: React.FC<DesktopProps> = ({
     }
   }, [examplePosition]);
 
-  // Save and load panel size to localStorage
+  // Save and load panel size to localStorage - but always reset to default on page load
   const [panelSize, setPanelSize] = useState(() => {
-    try {
-      const saved = localStorage.getItem('agentic-os-panel-size');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (error) {
-      console.warn('Failed to load panel size from localStorage:', error);
-    }
-    // Default size
-    return { width: 450, height: 350 };
+    // Always start with default size on page load/refresh for consistent experience
+    return { width: 500, height: 400 };
   });
 
   // Track when we're programmatically setting the size to avoid ResizeObserver loops
   const isSettingSizeRef = React.useRef(false);
+  
+  // Force re-render key to trigger grid recalculation
+  const [renderKey, setRenderKey] = useState(0);
 
-  // Set initial panel size CSS variables on mount
+  // Set initial panel size CSS variables on mount - always reset to default
   React.useEffect(() => {
     const root = document.documentElement;
     isSettingSizeRef.current = true;
-    root.style.setProperty('--panel-width', `${panelSize.width}px`);
-    root.style.setProperty('--panel-height', `${panelSize.height}px`);
+    
+    // Always use default size on page load
+    const defaultWidth = 500;
+    const defaultHeight = 400;
+    
+    root.style.setProperty('--panel-width', `${defaultWidth}px`);
+    root.style.setProperty('--panel-height', `${defaultHeight}px`);
+    
+    // Ensure state matches default and force re-render
+    setPanelSize({ width: defaultWidth, height: defaultHeight });
+    
+    // Force a re-render after a short delay to ensure grid calculations are correct
     setTimeout(() => {
+      setPanelSize({ width: defaultWidth, height: defaultHeight });
+      setRenderKey(prev => prev + 1); // Force re-render to recalculate grid
       isSettingSizeRef.current = false;
-    }, 100);
+    }, 150);
   }, []); // Only run on mount
 
   // Save panel size to localStorage
@@ -291,10 +330,23 @@ const Desktop: React.FC<DesktopProps> = ({
 
 
   const handleSettingChange = (key: string, value: any) => {
-    setSettings((prev: any) => ({
-      ...prev,
-      [key]: value
-    }));
+    setSettings((prev: any) => {
+      const newSettings = {
+        ...prev,
+        [key]: value
+      };
+      
+      // Auto-update text color to appropriate default when theme changes
+      if (key === 'theme') {
+        if (value === 'light' && (prev.textColor === '#ffffff' || !prev.textColor)) {
+          newSettings.textColor = '#212529'; // Dark text for light theme
+        } else if ((value === 'dark' || value === 'auto') && (prev.textColor === '#212529' || !prev.textColor)) {
+          newSettings.textColor = '#ffffff'; // Light text for dark theme
+        }
+      }
+      
+      return newSettings;
+    });
   };
 
   const handleExampleClick = (example: any) => {
@@ -529,7 +581,7 @@ const Desktop: React.FC<DesktopProps> = ({
         ) : (
           <div className="desktop-welcome">
             <div 
-              className={`examples-container ${settings.panelOrientation === 'vertical' ? 'vertical-layout' : 'horizontal-layout'} ${isDragging ? 'dragging' : ''}`}
+              className={`examples-container vertical-layout ${isDragging ? 'dragging' : ''}`}
               style={{
                 right: `${examplePosition.right}px`,
                 top: `${examplePosition.top || 20}px`,
@@ -545,8 +597,20 @@ const Desktop: React.FC<DesktopProps> = ({
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M7,19V17H9V19H7M11,19V17H13V19H11M15,19V17H17V19H15M7,15V13H9V15H7M11,15V13H13V15H11M15,15V13H17V15H15M7,11V9H9V11H7M11,11V9H13V11H11M15,11V9H17V11H15M7,7V5H9V7H7M11,7V5H13V7H11M15,7V5H17V7H15Z"/>
                   </svg>
+                  <button 
+                    className="reset-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Reset panel size and position
+                      setPanelSize({ width: 500, height: 400 });
+                      setExamplePosition({ right: 20, top: 80 });
+                      setRenderKey(prev => prev + 1); // Force grid recalculation
+                    }}
+                    title="Reset panel size and position"
+                  >
+                    ⌂
+                  </button>
                 </div>
-                <span className="examples-title">Quick Start</span>
                 <div className="header-actions">
                   <button 
                     className="icon-btn"
@@ -568,43 +632,12 @@ const Desktop: React.FC<DesktopProps> = ({
                   </button>
                 </div>
               </div>
-              <div className="example-grid" style={{
-                gridTemplateColumns: (() => {
-                  const totalItems = examples.length + 1; // +1 for add button
-                  if (totalItems <= 2) return 'repeat(2, 1fr)';
-                  if (totalItems <= 6) return 'repeat(3, 1fr)';
-                  if (totalItems <= 12) return 'repeat(4, 1fr)';
-                  if (totalItems <= 20) return 'repeat(5, 1fr)';
-                  return 'repeat(6, 1fr)';
-                })(),
-                gap: (() => {
-                  const totalItems = examples.length + 1;
-                  if (totalItems <= 6) return '16px';
-                  if (totalItems <= 12) return '12px';
-                  if (totalItems <= 20) return '10px';
-                  return '8px';
-                })(),
-                '--example-font-size': (() => {
-                  const totalItems = examples.length + 1;
-                  if (totalItems <= 6) return '0.9rem';
-                  if (totalItems <= 12) return '0.8rem';
-                  if (totalItems <= 20) return '0.75rem';
-                  return '0.7rem';
-                })(),
-                '--example-min-height': (() => {
-                  const totalItems = examples.length + 1;
-                  if (totalItems <= 6) return '80px';
-                  if (totalItems <= 12) return '70px';
-                  if (totalItems <= 20) return '60px';
-                  return '50px';
-                })(),
-                '--example-padding': (() => {
-                  const totalItems = examples.length + 1;
-                  if (totalItems <= 6) return '12px';
-                  if (totalItems <= 12) return '10px';
-                  if (totalItems <= 20) return '8px';
-                  return '6px';
-                })()
+              <div key={renderKey} className="example-grid" style={{
+                gridTemplateColumns: 'repeat(2, 1fr)', // Always use vertical layout (2 columns)
+                gap: '14px',
+                '--example-font-size': '0.85rem',
+                '--example-min-height': '75px',
+                '--example-padding': '12px'
               } as React.CSSProperties & { [key: string]: string }}>
                 {examples.map((example: any, index: number) => (
                   <div key={index} className="example-item-wrapper">
@@ -630,7 +663,12 @@ const Desktop: React.FC<DesktopProps> = ({
                   </div>
                 ))}
                 {showAddExample ? (
-                  <div className="add-example-form">
+                  <div className="add-example-form" style={{
+                    gridColumn: 'span 2', // Span across multiple columns for more space
+                    aspectRatio: 'auto',
+                    minHeight: '180px',
+                    height: 'auto'
+                  }}>
                     <input
                       type="text"
                       value={newExampleTitle}
@@ -673,14 +711,6 @@ const Desktop: React.FC<DesktopProps> = ({
           </div>
         )}
       </div>
-      
-      {appHistory.length > 0 && (
-        <AppHistory 
-          apps={appHistory} 
-          onSelectApp={onSwitchToApp}
-          onRemoveApp={onRemoveApp}
-        />
-      )}
 
       <PromptDrawer
         isOpen={isPromptDrawerOpen}
@@ -781,23 +811,14 @@ const Desktop: React.FC<DesktopProps> = ({
             </div>
 
             <div className="settings-option">
-              <span className="settings-label">Main Font</span>
+              <span className="settings-label">Text Color</span>
               <div className="settings-control">
-                <select 
-                  className="settings-select"
-                  value={settings.mainFont}
-                  onChange={(e) => handleSettingChange('mainFont', e.target.value)}
-                >
-                  <option value="Inter">Inter</option>
-                  <option value="Roboto">Roboto</option>
-                  <option value="Open Sans">Open Sans</option>
-                  <option value="Lato">Lato</option>
-                  <option value="Poppins">Poppins</option>
-                  <option value="Montserrat">Montserrat</option>
-                  <option value="Source Sans Pro">Source Sans Pro</option>
-                  <option value="Arial">Arial</option>
-                  <option value="Helvetica">Helvetica</option>
-                </select>
+                <input 
+                  type="color"
+                  className="color-picker"
+                  value={settings.textColor}
+                  onChange={(e) => handleSettingChange('textColor', e.target.value)}
+                />
               </div>
             </div>
 
@@ -820,34 +841,6 @@ const Desktop: React.FC<DesktopProps> = ({
                   <option value="Fira Code">Fira Code</option>
                   <option value="Courier New">Courier New</option>
                 </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="settings-section">
-            <h4 className="settings-section-title">Layout</h4>
-            
-            <div className="settings-option">
-              <span className="settings-label">Panel Orientation</span>
-              <div className="settings-control">
-                <select 
-                  className="settings-select"
-                  value={settings.panelOrientation}
-                  onChange={(e) => handleSettingChange('panelOrientation', e.target.value)}
-                >
-                  <option value="horizontal">Horizontal</option>
-                  <option value="vertical">Vertical</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="settings-option">
-              <span className="settings-label">Animations</span>
-              <div className="settings-control">
-                <div 
-                  className={`settings-toggle ${settings.animations ? 'active' : ''}`}
-                  onClick={() => handleSettingChange('animations', !settings.animations)}
-                />
               </div>
             </div>
           </div>
