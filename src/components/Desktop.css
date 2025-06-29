@@ -746,46 +746,56 @@
 }
 
 @media (max-width: 480px) {
+  /* Hide examples container by default on mobile */
   .examples-container {
-    position: relative;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    max-width: none;
-    width: 100%;
-    margin: 10px 0;
-    padding: 10px;
+    display: none;
   }
   
-  .examples-panel {
-    position: relative;
-    top: auto;
-    right: auto;
-    margin: 0;
-    width: 100%;
+  /* Only show when specifically opened via prompt drawer */
+  .examples-container.mobile-open {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 16px;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    animation: mobileOverlayFadeIn 0.3s ease-out;
+  }
+  
+  .examples-container.mobile-open .example-grid {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+    padding: 16px;
+    gap: 12px;
+    grid-template-columns: 1fr !important;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .examples-container.mobile-open .example-item {
+    padding: 16px;
+    font-size: 0.9rem;
+    min-height: 60px;
+    aspect-ratio: auto;
     max-height: none;
   }
   
-  .panel-header {
-    padding: 12px;
-  }
-  
-  .panel-title {
-    font-size: 0.9rem;
-  }
-  
-  .example-grid {
-    padding: 12px;
-    gap: 8px;
-    grid-template-columns: 1fr !important;
-  }
-  
-  .example-item {
-    padding: 12px;
-    font-size: 0.8rem;
-    min-height: 60px;
+  .examples-container.mobile-open .examples-header {
+    background: var(--bg-primary);
+    margin: -16px -16px 16px -16px;
+    padding: 16px;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
   }
   
   .floating-controls {
@@ -803,9 +813,16 @@
   }
   
   .icon-btn {
-    width: 40px;
-    height: 40px;
-    padding: 10px;
+    width: 44px;
+    height: 44px;
+    padding: 12px;
+    /* Make marketplace button more prominent on mobile */
+    border: 2px solid var(--border-color);
+  }
+  
+  .icon-btn:hover {
+    border-color: var(--accent-blue);
+    transform: scale(1.05);
   }
   
   .logo-container {
@@ -1203,4 +1220,15 @@
 .example-grid .add-example-btn:nth-child(even),
 .example-grid .add-example-form:nth-child(even) {
   margin-left: 24px;
+}
+
+@keyframes mobileOverlayFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

@@ -23,6 +23,8 @@ const Desktop: React.FC<DesktopProps> = ({
 }) => {
   const [isPromptDrawerOpen, setIsPromptDrawerOpen] = useState(false);
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
+  const [isMobileExamplesOpen, setIsMobileExamplesOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
   
   // Settings state
   const [settings, setSettings] = useState(() => {
@@ -458,6 +460,28 @@ const Desktop: React.FC<DesktopProps> = ({
     }
   }, [isSettingsPanelOpen]);
 
+  // Handle mobile screen size detection
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 480);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Handle mobile examples panel opening from prompt drawer
+  const handleMobileExamplesOpen = () => {
+    if (isMobile) {
+      setIsMobileExamplesOpen(true);
+      setIsPromptDrawerOpen(false); // Close prompt drawer when examples open
+    }
+  };
+
+  const handleMobileExamplesClose = () => {
+    setIsMobileExamplesOpen(false);
+  };
+
   // Drag event handlers
   const handleDragStart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -581,11 +605,17 @@ const Desktop: React.FC<DesktopProps> = ({
         ) : (
           <div className="desktop-welcome">
             <div 
-              className={`examples-container vertical-layout ${isDragging ? 'dragging' : ''}`}
+              className={`examples-container vertical-layout ${isDragging ? 'dragging' : ''} ${isMobile && isMobileExamplesOpen ? 'mobile-open' : ''}`}
               style={{
                 right: `${examplePosition.right}px`,
                 top: `${examplePosition.top || 20}px`,
                 cursor: isDragging ? 'grabbing' : 'auto'
+              }}
+              onClick={(e) => {
+                // Close mobile overlay if clicking on the backdrop
+                if (isMobile && isMobileExamplesOpen && e.target === e.currentTarget) {
+                  handleMobileExamplesClose();
+                }
               }}
             >
               <div className="examples-header">
@@ -612,10 +642,27 @@ const Desktop: React.FC<DesktopProps> = ({
                   </button>
                 </div>
                 <div className="header-actions">
+                  {isMobile && isMobileExamplesOpen && (
+                    <button 
+                      className="icon-btn"
+                      onClick={handleMobileExamplesClose}
+                      title="Close Examples"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                      </svg>
+                    </button>
+                  )}
                   <button 
                     className="icon-btn"
-                    onClick={() => setIsPromptDrawerOpen(true)}
-                    title="Marketplace"
+                    onClick={() => {
+                      if (isMobile) {
+                        handleMobileExamplesOpen();
+                      } else {
+                        setIsPromptDrawerOpen(true);
+                      }
+                    }}
+                    title={isMobile ? "Example Prompts" : "Marketplace"}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M19 7H16V6A4 4 0 0 0 8 6V7H5A1 1 0 0 0 4 8V19A3 3 0 0 0 7 22H17A3 3 0 0 0 20 19V8A1 1 0 0 0 19 7ZM10 6A2 2 0 0 1 14 6V7H10V6ZM18 19A1 1 0 0 1 17 20H7A1 1 0 0 1 6 19V9H8V10A1 1 0 0 0 10 10A1 1 0 0 0 10 8V9H14V10A1 1 0 0 0 16 10A1 1 0 0 0 14 8V9H18V19Z"/>
