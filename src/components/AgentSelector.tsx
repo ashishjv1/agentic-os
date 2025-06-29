@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Agent } from '../types';
 import './AgentSelector.css';
 
@@ -13,25 +13,53 @@ const AgentSelector: React.FC<AgentSelectorProps> = ({
   agents,
   onAgentChange,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleAgentSelect = (agent: Agent) => {
+    onAgentChange(agent);
+    setIsOpen(false);
+  };
+
   return (
-    <div className="agent-selector">
-      <select
-        value={selectedAgent.id}
-        onChange={(e) => {
-          const agent = agents.find(a => a.id === e.target.value);
-          if (agent) onAgentChange(agent);
-        }}
+    <div className="agent-dropdown" ref={dropdownRef}>
+      <button
         className="agent-select"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
       >
-        {agents.map((agent) => (
-          <option key={agent.id} value={agent.id}>
-            {agent.name}
-          </option>
-        ))}
-      </select>
-      <div className="agent-description">
-        {selectedAgent.description}
-      </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7 10l5 5 5-5z"/>
+        </svg>
+      </button>
+      
+      {isOpen && (
+        <div className="dropdown-menu">
+          {agents.map((agent) => (
+            <div
+              key={agent.id}
+              className={`dropdown-item ${selectedAgent.id === agent.id ? 'selected' : ''}`}
+              onClick={() => handleAgentSelect(agent)}
+            >
+              <div className="agent-option-content">
+                <span className="agent-name">{agent.name}</span>
+                <span className="agent-description">{agent.description}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

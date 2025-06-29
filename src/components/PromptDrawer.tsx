@@ -6,9 +6,10 @@ interface PromptDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   selectedAgent: string;
+  onAddToExamples?: (prompt: { title: string; detailedPrompt: string }) => void;
 }
 
-export default function PromptDrawer({ isOpen, onClose, selectedAgent }: PromptDrawerProps) {
+export default function PromptDrawer({ isOpen, onClose, selectedAgent, onAddToExamples }: PromptDrawerProps) {
   const [selectedPrompts, setSelectedPrompts] = useState<Record<string, string>>({});
   const [allPrompts, setAllPrompts] = useState<SimplePrompt[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -153,6 +154,18 @@ export default function PromptDrawer({ isOpen, onClose, selectedAgent }: PromptD
                   >
                     {selectedPromptId === prompt.id ? '✓ Active' : 'Use This Prompt'}
                   </button>
+                  {onAddToExamples && (
+                    <button 
+                      className="add-to-examples-btn"
+                      onClick={() => onAddToExamples({
+                        title: prompt.name,
+                        detailedPrompt: prompt.agentPrompt
+                      })}
+                      title="Add to Examples"
+                    >
+                      Add to Examples
+                    </button>
+                  )}
                 </div>
               </div>
             ))

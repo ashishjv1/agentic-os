@@ -278,12 +278,7 @@ Create apps that display research results, news summaries, fact comparisons, tim
     }
     
     // Add custom prompt instructions if available
-    if (selectedPrompt && selectedPrompt.agentPrompt) {
-      console.log('🎯 buildUserPrompt: Adding custom instructions');
-      prompt += `\n\nCustom Agent Instructions: ${selectedPrompt.agentPrompt}`;
-    } else {
-      console.log('🎯 buildUserPrompt: No custom prompt found, using default');
-    }
+    // REMOVED: Custom agent instructions are no longer automatically added to avoid cluttering prompts
     
     // Different instructions based on agent type
     if (request.agentType === 'info-agent') {

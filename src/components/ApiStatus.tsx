@@ -38,16 +38,18 @@ const ApiStatus: React.FC<ApiStatusProps> = ({ isVisible, onClose }) => {
         
         <div className="api-status-content">
           <div className="status-section">
-            <h4>OpenRouter Connection</h4>
-            <div className={`status-indicator ${hasApiKey ? 'connected' : 'disconnected'}`}>
-              {hasApiKey ? '✅ API Key Configured' : '❌ API Key Missing'}
+            <div className="api-connection-status">
+              <span className="api-status-label">API Status:</span>
+              <div className={`status-indicator ${hasApiKey ? 'online' : 'offline'}`}>
+                <span className="status-dot"></span>
+              </div>
             </div>
             
             {!hasApiKey && (
               <div className="setup-instructions">
                 <p>To enable AI-powered app generation:</p>
                 <ol>
-                  <li>Get an API key from <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">OpenRouter.ai</a></li>
+                  <li>Get an API key from <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">OpenRouter.ai</a> or other providers</li>
                   <li>Edit your <code>.env</code> file</li>
                   <li>Replace <code>your_openrouter_api_key_here</code> with your actual API key</li>
                   <li>Restart the development server</li>
@@ -82,7 +84,7 @@ const ApiStatus: React.FC<ApiStatusProps> = ({ isVisible, onClose }) => {
             <h4>Current Mode</h4>
             <p className="mode-description">
               {hasApiKey 
-                ? '🤖 AI-powered generation enabled - Apps will be created using OpenRouter models'
+                ? '🤖 AI-powered generation enabled - Apps will be created using AI models'
                 : '🔄 Fallback mode - Using pre-built templates and mock generation'
               }
             </p>

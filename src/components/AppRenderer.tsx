@@ -10,9 +10,13 @@ interface AppRendererProps {
 
 const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [contentSize, setContentSize] = useState({ 
+    width: '480px', 
+    height: '360px' 
+  });
 
   const handleClose = () => {
     if (onClose) {
@@ -22,7 +26,7 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
 
   const handleMinimize = () => {
     setIsMinimized(!isMinimized);
-    if (onMinimize) {
+    if (onMinimize && !isMinimized) {
       onMinimize();
     }
   };
@@ -31,13 +35,66 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
     setIsMaximized(!isMaximized);
   };
 
+  // Function to detect content size from iframe
+  const detectContentSize = () => {
+    const iframe = iframeRef.current;
+    if (!iframe || !iframe.contentDocument) return;
+
+    try {
+      const body = iframe.contentDocument.body;
+      const html = iframe.contentDocument.documentElement;
+      
+      if (body && html) {
+        // Remove default margin/padding that might affect measurements
+        body.style.margin = '0';
+        body.style.padding = '20px';
+        
+        // Wait a bit for layout to settle, then measure
+        setTimeout(() => {
+          const bodyRect = body.getBoundingClientRect();
+          const scrollWidth = Math.max(body.scrollWidth, html.scrollWidth);
+          const scrollHeight = Math.max(body.scrollHeight, html.scrollHeight);
+          
+          // Use the larger of the two measurements for accuracy
+          const width = Math.max(bodyRect.width, scrollWidth, 320);
+          const height = Math.max(bodyRect.height, scrollHeight, 240);
+          
+          // No extra padding needed since we're showing content directly
+          const maxWidth = window.innerWidth - 80; // Margin for safety
+          const maxHeight = window.innerHeight - 180; // More space for chat bar
+          
+          const adjustedWidth = Math.min(width, maxWidth);
+          const adjustedHeight = Math.min(height, maxHeight);
+          
+          // Only update if there's a meaningful change
+          const currentWidth = parseInt(contentSize.width);
+          const currentHeight = parseInt(contentSize.height);
+          
+          if (Math.abs(adjustedWidth - currentWidth) > 30 || Math.abs(adjustedHeight - currentHeight) > 30) {
+            setContentSize({
+              width: `${adjustedWidth}px`,
+              height: `${adjustedHeight}px`
+            });
+          }
+        }, 200);
+      }
+    } catch (error) {
+      // Fallback to smaller responsive size
+      console.log('Could not detect content size, using responsive default');
+      const fallbackWidth = Math.min(480, window.innerWidth - 100);
+      const fallbackHeight = Math.min(360, window.innerHeight - 200);
+      setContentSize({
+        width: `${fallbackWidth}px`,
+        height: `${fallbackHeight}px`
+      });
+    }
+  };
+
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
     setIsLoading(true);
-    setIsMinimized(false); // Ensure app starts expanded
-    setIsMaximized(false); // Reset maximize state
 
     // Simple approach - just load the content and let the JS run naturally
     const htmlContent = `
@@ -63,8 +120,10 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
               background: var(--bg-primary);
               color: var(--text-primary);
-              min-height: 100vh;
               box-sizing: border-box;
+              overflow-x: hidden; /* Prevent horizontal scroll */
+              max-width: 100%; /* Prevent content from expanding beyond container */
+              min-height: 200px; /* Minimum height for usability */
             }
             * {
               box-sizing: border-box;
@@ -92,6 +151,12 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
       const handleLoad = () => {
         console.log('Iframe loaded successfully');
         setIsLoading(false);
+        
+        // Detect content size once after content is fully rendered
+        setTimeout(() => {
+          detectContentSize();
+        }, 1000); // Give enough time for content to render
+        
         iframe.removeEventListener('load', handleLoad);
       };
       
@@ -101,6 +166,7 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
       const fallbackTimeout = setTimeout(() => {
         console.log('Fallback: Setting loading to false');
         setIsLoading(false);
+        // Don't call detectContentSize here to avoid double sizing
       }, 3000);
 
       return () => {
@@ -114,39 +180,39 @@ const AppRenderer: React.FC<AppRendererProps> = ({ app, onClose, onMinimize }) =
     };
   }, [app]);
 
+  const dynamicStyle = isMaximized 
+    ? {} // Let CSS handle maximized state
+    : isMinimized 
+    ? { width: '320px', height: '50px' }
+    : { width: contentSize.width, height: contentSize.height };
+
   return (
-    <div className={`app-renderer ${isMaximized ? 'maximized' : ''} ${isMinimized ? 'minimized' : ''} ${isLoading ? 'loading' : ''}`}>
-      <div className="app-header">
-        <div className="app-title">
-          <div className="app-icon">🤖</div>
-          <div className="app-info">
-            <span className="app-name">{app.name}</span>
-            <span className="app-prompt">"{app.prompt}"</span>
-          </div>
-        </div>
-        <div className="app-actions">
-          <button 
-            className="window-btn minimize-btn"
-            onClick={handleMinimize}
-            title={isMinimized ? "Restore" : "Minimize"}
-          >
-            −
-          </button>
-          <button 
-            className="window-btn maximize-btn"
-            onClick={handleMaximize}
-            title={isMaximized ? "Restore" : "Maximize"}
-          >
-            {isMaximized ? '⧉' : '□'}
-          </button>
-          <button 
-            className="window-btn close-btn"
-            onClick={handleClose}
-            title="Close"
-          >
-            ×
-          </button>
-        </div>
+    <div 
+      className={`app-renderer ${isMaximized ? 'maximized' : ''} ${isMinimized ? 'minimized' : ''} ${isLoading ? 'loading' : ''}`}
+      style={dynamicStyle}
+    >
+      <div className="window-controls">
+        <button 
+          className="window-btn minimize-btn"
+          onClick={handleMinimize}
+          title={isMinimized ? "Restore" : "Minimize"}
+        >
+          −
+        </button>
+        <button 
+          className="window-btn maximize-btn"
+          onClick={handleMaximize}
+          title={isMaximized ? "Restore" : "Maximize"}
+        >
+          {isMaximized ? '⧉' : '□'}
+        </button>
+        <button 
+          className="window-btn close-btn"
+          onClick={handleClose}
+          title="Close"
+        >
+          ×
+        </button>
       </div>
       
       {!isMinimized && (

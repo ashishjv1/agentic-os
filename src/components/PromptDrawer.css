@@ -270,6 +270,7 @@
 .prompt-actions {
   margin-top: 0.75rem;
   display: flex;
+  gap: 0.5rem;
   justify-content: flex-end;
 }
 
@@ -291,6 +292,29 @@
 }
 
 .select-prompt-btn:active {
+  transform: translateY(0);
+}
+
+.add-to-examples-btn {
+  background: rgba(175, 82, 222, 0.8);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.add-to-examples-btn:hover {
+  background: var(--accent-purple);
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.add-to-examples-btn:active {
   transform: translateY(0);
 }
 

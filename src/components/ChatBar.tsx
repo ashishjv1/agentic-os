@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Agent, ChatMessage } from '../types';
+import { Agent, ChatMessage, GeneratedApp } from '../types';
 import AgentSelector from './AgentSelector';
 import ChatInput from './ChatInput';
 import './ChatBar.css';
@@ -12,6 +12,9 @@ interface ChatBarProps {
   onCancelGeneration: () => void;
   chatHistory: ChatMessage[];
   isGenerating: boolean;
+  hasCurrentApp?: boolean;
+  appHistory?: GeneratedApp[];
+  onSwitchToApp?: (app: GeneratedApp) => void;
 }
 
 const ChatBar: React.FC<ChatBarProps> = ({
@@ -20,29 +23,43 @@ const ChatBar: React.FC<ChatBarProps> = ({
   availableAgents,
   onSendMessage,
   onCancelGeneration,
-  chatHistory,
   isGenerating,
+  hasCurrentApp = false,
+  appHistory = [],
+  onSwitchToApp,
 }) => {
   const [showHistory, setShowHistory] = useState(false);
 
   return (
-    <div className="chat-bar">
-      {showHistory && chatHistory.length > 0 && (
+    <div className={`chat-bar ${hasCurrentApp ? 'with-app' : ''}`}>
+      {showHistory && appHistory.length > 0 && (
         <div className="chat-history">
           <div className="chat-history-header">
-            <span>Chat History</span>
+            <span>App History</span>
             <button onClick={() => setShowHistory(false)}>×</button>
           </div>
           <div className="chat-history-content">
-            {chatHistory.map((message) => (
-              <div key={message.id} className={`chat-message ${message.role}`}>
-                <div className="message-header">
-                  <span className="message-role">{message.role}</span>
-                  <span className="message-time">
-                    {message.timestamp.toLocaleTimeString()}
-                  </span>
+            {appHistory.map((app) => (
+              <div 
+                key={app.id} 
+                className="app-history-item"
+                onClick={() => {
+                  if (onSwitchToApp) {
+                    onSwitchToApp(app);
+                    setShowHistory(false);
+                  }
+                }}
+              >
+                <div className="app-history-header">
+                  <div className="app-history-icon">🤖</div>
+                  <div className="app-history-info">
+                    <span className="app-history-name">{app.name}</span>
+                    <span className="app-history-time">
+                      {app.createdAt.toLocaleTimeString()}
+                    </span>
+                  </div>
                 </div>
-                <div className="message-content">{message.content}</div>
+                <div className="app-history-prompt">"{app.prompt}"</div>
               </div>
             ))}
           </div>
@@ -54,31 +71,32 @@ const ChatBar: React.FC<ChatBarProps> = ({
           <div className="generation-status">
             <div className="status-indicator">
               <div className="pulse-dot"></div>
-              <span>Generating with {selectedAgent.name}...</span>
+              <span>Generating...</span>
             </div>
           </div>
         )}
         
-        <AgentSelector
-          selectedAgent={selectedAgent}
-          agents={availableAgents}
-          onAgentChange={onAgentChange}
-        />
+        <div className="search-bar-wrapper">
+          <AgentSelector
+            selectedAgent={selectedAgent}
+            agents={availableAgents}
+            onAgentChange={onAgentChange}
+          />
+          <ChatInput
+            onSendMessage={onSendMessage}
+            onCancelGeneration={onCancelGeneration}
+            isGenerating={isGenerating}
+            placeholder="Create something..."
+          />
+        </div>
         
-        <ChatInput
-          onSendMessage={onSendMessage}
-          onCancelGeneration={onCancelGeneration}
-          isGenerating={isGenerating}
-          placeholder={`Ask ${selectedAgent.name} to create something...`}
-        />
-        
-        {chatHistory.length > 0 && (
+        {appHistory.length > 0 && (
           <button 
             className="history-toggle"
             onClick={() => setShowHistory(!showHistory)}
-            title="Toggle chat history"
+            title="App history"
           >
-            💬
+            📱
           </button>
         )}
       </div>

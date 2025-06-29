@@ -114,7 +114,17 @@ function App() {
         const cancelMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: 'Generation cancelled by user.',
+          content: '⛔ Generation stopped by user.',
+          timestamp: new Date(),
+          agentId: selectedAgent.id,
+        };
+        setChatHistory(prev => [...prev, cancelMessage]);
+      } else if (error instanceof Error && error.message === 'Generation cancelled') {
+        console.log('🛑 Generation was cancelled by user (fallback)');
+        const cancelMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: '⛔ Generation stopped by user.',
           timestamp: new Date(),
           agentId: selectedAgent.id,
         };
@@ -185,14 +195,33 @@ function App() {
       console.log('🔄 Falling back to mock generation...');
       
       // Fallback to mock generation if API fails
-      return await generateMockApp(prompt, agent);
+      return await generateMockApp(prompt, agent, abortSignal);
     }
   };
 
-  const generateMockApp = async (prompt: string, agent: Agent): Promise<GeneratedApp> => {
+  const generateMockApp = async (prompt: string, agent: Agent, abortSignal?: AbortSignal): Promise<GeneratedApp> => {
     // Mock app generation as fallback
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        if (abortSignal?.aborted) {
+          reject(new Error('Generation cancelled'));
+          return;
+        }
+        
+        resolve(getMockAppTemplate(prompt, agent));
+      }, 1000);
+      
+      // If abort signal is triggered, clear timeout and reject
+      if (abortSignal) {
+        abortSignal.addEventListener('abort', () => {
+          clearTimeout(timeoutId);
+          reject(new Error('Generation cancelled'));
+        });
+      }
+    });
+  };
 
+  const getMockAppTemplate = (prompt: string, agent: Agent): GeneratedApp => {
     const appTemplates = {
       'app-generator': {
         calculator: {
@@ -226,25 +255,30 @@ function App() {
           `,
           css: `
             .calculator {
-              background: var(--bg-secondary);
-              border-radius: var(--border-radius);
-              padding: 20px;
-              width: 300px;
+              background: var(--glass-secondary);
+              border-radius: var(--border-radius-lg);
+              padding: 24px;
+              width: 320px;
               margin: 20px auto;
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+              box-shadow: var(--shadow-glass);
+              backdrop-filter: blur(16px);
+              border: 1px solid var(--border-color);
             }
             .display {
               margin-bottom: 15px;
             }
             .display input {
               width: 100%;
-              height: 60px;
+              height: 70px;
               font-size: 24px;
               text-align: right;
-              background: var(--bg-primary);
-              border: 2px solid var(--border-color);
+              background: var(--glass-primary);
+              border: 1px solid var(--border-color);
               color: var(--text-primary);
-              padding: 0 15px;
+              padding: 0 20px;
+              border-radius: var(--border-radius-sm);
+              backdrop-filter: blur(8px);
+              box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
             }
             .buttons {
               display: grid;
@@ -252,18 +286,22 @@ function App() {
               gap: 10px;
             }
             .buttons button {
-              height: 50px;
+              height: 56px;
               font-size: 18px;
-              border-radius: 5px;
-              transition: all 0.2s;
-              background: var(--bg-tertiary);
+              border-radius: var(--border-radius-sm);
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              background: var(--glass-tertiary);
               border: 1px solid var(--border-color);
               color: var(--text-primary);
               cursor: pointer;
+              backdrop-filter: blur(12px);
+              box-shadow: var(--shadow-glass);
+              font-weight: 500;
             }
             .buttons button:hover {
-              transform: translateY(-2px);
-              background: var(--bg-primary);
+              transform: translateY(-3px) scale(1.02);
+              background: var(--glass-primary);
+              box-shadow: 0 8px 24px rgba(0, 122, 204, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             }
             .equals {
               grid-row: span 2;
@@ -351,7 +389,7 @@ function App() {
       prompt,
       agentId: agent.id,
       html: `<div class="simple-app"><h2>Generated App</h2><p>You asked: "${prompt}"</p><p>This is a fallback app generated by ${agent.name}</p><p style="color: var(--text-secondary); font-size: 12px;">Note: Set up OpenRouter API key for AI generation</p></div>`,
-      css: `.simple-app { padding: 40px; text-align: center; background: var(--bg-secondary); border-radius: var(--border-radius); margin: 20px; }`,
+      css: `.simple-app { padding: 40px; text-align: center; background: var(--glass-secondary); border-radius: var(--border-radius-lg); margin: 20px; backdrop-filter: blur(16px); box-shadow: var(--shadow-glass); border: 1px solid var(--border-color); }`,
       js: `console.log('Fallback app generated for: ${prompt}');`,
       createdAt: new Date(),
     };
@@ -363,6 +401,7 @@ function App() {
     }
     setCurrentApp(app);
   };
+
 
   const minimizeCurrentApp = () => {
     if (currentApp) {
@@ -397,6 +436,16 @@ function App() {
       currentAbortController.abort();
       setCurrentAbortController(null);
       setIsGenerating(false);
+      
+      // Add immediate feedback message
+      const cancelMessage: ChatMessage = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: '⛔ Generation stopped.',
+        timestamp: new Date(),
+        agentId: selectedAgent.id,
+      };
+      setChatHistory(prev => [...prev, cancelMessage]);
     }
   };
 
@@ -421,6 +470,9 @@ function App() {
         onCancelGeneration={cancelGeneration}
         chatHistory={chatHistory}
         isGenerating={isGenerating}
+        hasCurrentApp={!!currentApp}
+        appHistory={appHistory}
+        onSwitchToApp={switchToApp}
       />
       <ApiStatus 
         isVisible={showApiStatus}
