@@ -393,10 +393,15 @@
   overflow: hidden;
   z-index: 1;
   letter-spacing: -0.01em;
-  line-height: 1.3;
+  line-height: 1.2;
   word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
   hyphens: auto;
   font-family: var(--font-family-panel);
+  /* Ensure text stays within bounds */
+  box-sizing: border-box;
+  white-space: normal;
 }
 
 .example-item::before {
@@ -692,6 +697,10 @@
     max-height: 40px;
     aspect-ratio: 3;
     padding: 6px;
+    line-height: 1.1;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
   }
   
   .floating-btn {
